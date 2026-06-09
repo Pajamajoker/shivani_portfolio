@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shivani — Portfolio v5</title>
+<title>Coffee with Shivani!</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;0,900;1,400;1,700;1,800&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Inter:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Syne:wght@500;600;700&display=swap" rel="stylesheet">
@@ -44,7 +44,23 @@
   .scroll-progress {
     position: fixed; top: 0; left: 0; height: 2px; width: 0;
     background: var(--terra); z-index: 200;
-    transition: width 0.1s linear;
+    transition: width 0.1s linear,
+                height 0.35s ease,
+                box-shadow 0.35s ease;
+  }
+  .scroll-progress.narr-active {
+    height: 5px;
+    box-shadow: 0 0 24px 3px rgba(192,83,58,1.0),
+                0 0 54px 6px rgba(192,83,58,0.75),
+                0 0 90px 12px rgba(192,83,58,0.35);
+    animation: progressShimmer 1.8s ease-in-out infinite;
+  }
+  @keyframes progressShimmer {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.38; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-progress.narr-active { animation: none; }
   }
 
   /* ─── NAV (always visible) ─── */
@@ -1377,7 +1393,7 @@
     gap: 5px;
     height: 38px;
     padding-bottom: 4px;
-    transition: opacity 0.6s ease;
+    transition: opacity 0.6s ease, height 0.6s cubic-bezier(0.16,1,0.3,1);
   }
 
   .mini-steam span {
@@ -1387,11 +1403,40 @@
     background: linear-gradient(to top, transparent 0%, var(--terra-soft) 100%);
     opacity: 0;
     animation: steamRise 2.6s ease-in-out infinite;
+    transition: height 0.6s cubic-bezier(0.16,1,0.3,1);
   }
 
   .mini-steam span:nth-child(1) { height: 18px; animation-delay: 0s;    }
   .mini-steam span:nth-child(2) { height: 28px; animation-delay: 0.45s; }
   .mini-steam span:nth-child(3) { height: 20px; animation-delay: 0.9s;  }
+
+.virtual-coffee-indicator.narr-active .mini-steam {
+    height: 125px;
+  }
+  .virtual-coffee-indicator.narr-active .mini-steam span:nth-child(1) {
+    height: 72px;
+    animation-duration: 2.0s;
+  }
+  .virtual-coffee-indicator.narr-active .mini-steam span:nth-child(2) {
+    height: 112px;
+    animation-duration: 2.0s;
+    animation-delay: 0.45s;
+  }
+  .virtual-coffee-indicator.narr-active .mini-steam span:nth-child(3) {
+    height: 80px;
+    animation-duration: 2.0s;
+    animation-delay: 0.9s;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mini-steam,
+    .mini-steam span { transition: none; }
+    .virtual-coffee-indicator.narr-active .mini-steam { height: 38px; }
+    .virtual-coffee-indicator.narr-active .mini-steam span:nth-child(1),
+    .virtual-coffee-indicator.narr-active .mini-steam span:nth-child(2),
+    .virtual-coffee-indicator.narr-active .mini-steam span:nth-child(3) {
+      height: revert; animation-duration: revert; animation-delay: revert;
+    }
+  }
 
   @keyframes steamRise {
     0%   { transform: translateY(8px);   opacity: 0;    }
@@ -1585,6 +1630,155 @@
     transform: translateY(-50%) translateX(0);
   }
 
+  /* ── HACKATHON CARD ── */
+  .hack-card {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    background: rgba(192,83,58,0.05);
+    border: 1px solid rgba(192,83,58,0.2);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin: 36px 0;
+    cursor: pointer;
+    outline: none;
+    opacity: 0;
+    transform: translateY(22px) scale(0.96);
+    transition: opacity 0.55s cubic-bezier(0.16,1,0.3,1),
+                transform 0.55s cubic-bezier(0.16,1,0.3,1),
+                box-shadow 0.35s ease,
+                border-color 0.35s ease;
+  }
+  .hack-card.hc-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  .hack-card:hover,
+  .hack-card:focus-visible {
+    border-color: rgba(192,83,58,0.45);
+    box-shadow: 0 0 32px 8px rgba(192,83,58,0.22);
+    transform: translateY(-3px) scale(1);
+  }
+  .hack-card:hover .hack-arrow { transform: translateX(5px); }
+  .hack-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    background: radial-gradient(circle at 30% 50%, rgba(192,83,58,0.13), transparent 68%);
+    opacity: 0;
+    transition: opacity 0.7s ease;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .hack-card.hc-glow .hack-glow { opacity: 1; }
+  .hack-confetti-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    border-radius: 16px;
+  }
+  .hack-cup-wrap {
+    flex-shrink: 0;
+    width: 110px;
+    height: 110px;
+    position: relative;
+    z-index: 2;
+    opacity: 0;
+    transform: translateY(28px) rotate(-22deg);
+    transition: opacity 0.65s cubic-bezier(0.34,1.56,0.64,1),
+                transform 0.65s cubic-bezier(0.34,1.56,0.64,1);
+    filter: drop-shadow(0 0 0px rgba(184,146,58,0));
+  }
+  .hack-card.hc-cup-in .hack-cup-wrap {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+    filter: drop-shadow(0 0 18px rgba(184,146,58,0.55))
+            drop-shadow(0 0 42px rgba(192,83,58,0.3));
+  }
+  .hack-cup-wrap canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .hack-body {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    min-width: 0;
+  }
+  .hack-eyebrow {
+    display: block;
+    font-family: var(--sans);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--terra);
+    margin-bottom: 8px;
+  }
+  .hack-title {
+    font-family: var(--serif);
+    font-weight: 800;
+    font-size: clamp(1.1rem, 1.9vw, 1.45rem);
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .case-wrap--alt .hack-title { color: var(--cream); }
+  .hack-sub {
+    font-family: var(--sans);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .hack-desc {
+    font-family: var(--sans);
+    font-size: 0.9rem;
+    line-height: 1.68;
+    color: var(--muted);
+    font-weight: 300;
+    margin-bottom: 14px;
+  }
+  .hack-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--sans);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--terra);
+  }
+  .hack-arrow {
+    display: inline-block;
+    transition: transform 0.2s ease;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hack-card {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease !important;
+    }
+    .hack-cup-wrap {
+      opacity: 1 !important;
+      transform: none !important;
+      filter: drop-shadow(0 0 18px rgba(184,146,58,0.45)) !important;
+    }
+    .hack-glow { opacity: 1 !important; }
+  }
+  @media (max-width: 600px) {
+    .hack-card { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .hack-cup-wrap { width: 88px; height: 88px; }
+  }
+
+
 </style>
 </head>
 <body>
@@ -1626,7 +1820,7 @@
         <h1>Shivani</h1>
       </div>
       <p class="ritual-tagline"><em>a portfolio over virtual coffee</em></p>
-      <p>Brew the cup first — that's the ritual. Only then does the work reveal itself: the strategy, the campaigns, the thinking behind them.</p>
+      <p>Brew the cup first. That's the ritual. The work reveals itself after: the strategy, the campaigns, the thinking behind them.</p>
       <div class="ritual-cta-group">
         <button class="ritual-button" id="ritualStart">Brew My Coffee!</button>
         <p class="ritual-sound-hint">♪ Sound on for the full experience</p>
@@ -1692,10 +1886,10 @@
 <!-- ═════════════════ NARR 2 — INTRO ═════════════════ -->
 <section class="narr-scene narr-scene--cream" data-nav-theme="light">
   <div class="narr-stage">
-    <div class="narr-line narr-line--micro">Welcome —</div>
+    <div class="narr-line narr-line--micro">Welcome.</div>
     <div class="narr-line">I'm <span class="acc">Shivani Nanadikar</span>.</div>
     <div class="narr-line narr-line--sub">Growth Marketer · Campaign Operator.</div>
-    <div class="narr-line narr-line--small">I treat marketing like a series of experiments — and care more about what works than what sounds good.</div>
+    <div class="narr-line narr-line--small">I treat marketing like a series of experiments, caring more about what works than what sounds good.</div>
   </div>
 </section>
 
@@ -1709,7 +1903,7 @@
     <p class="hero-title reveal">Marketing strategist for founders who want growth that actually compounds.</p>
 
     <p class="hero-lede reveal">
-      Four years building analytics systems, campaigns, and growth strategies — from analytics work supporting Deutsche Bank's marketing operations in Pune to multi-client campaign work in New York. I came from computer science and brought the rigour with me. Below, the receipts.
+      Four years building analytics systems, campaigns, and growth strategies: analytics work supporting Deutsche Bank's marketing operations in Pune, then multi-client campaign work in New York. I came from computer science and brought the rigour with me. Below, the receipts.
     </p>
 
     <div class="hero-stats" id="hero-stats">
@@ -1734,7 +1928,7 @@
     <div class="hero-creds reveal">
       <div class="cred-row">
         <div class="cred-label">Education</div>
-        <div class="cred-value">M.S. Digital Marketing & Media (STEM) — Yeshiva University, NYC<span class="dot">·</span>B.S. Computer Science — Walchand Institute of Technology, India</div>
+        <div class="cred-value">M.S. Digital Marketing & Media (STEM), Yeshiva University, NYC<span class="dot">·</span>B.S. Computer Science, Walchand Institute of Technology, India</div>
       </div>
       <div class="cred-row">
         <div class="cred-label">Worked With</div>
@@ -1742,23 +1936,135 @@
       </div>
       <div class="cred-row">
         <div class="cred-label">Recognition</div>
-        <div class="cred-value">TOFU Marketing Hackathon Winner — SURU Labs<span class="dot">·</span>Google Analytics Certified<span class="dot">·</span>Meta Ads Certified<span class="dot">·</span>Google SEO Certified<span class="dot">·</span>Product Marketing Certified</div>
+        <div class="cred-value">
+          TOFU Marketing Hackathon Winner · SURU Labs
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
+            <span style="background:rgba(244,239,232,0.08);border:1px solid rgba(244,239,232,0.15);border-radius:6px;padding:5px 12px;font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(244,239,232,0.7);">Google Analytics</span>
+            <span style="background:rgba(244,239,232,0.08);border:1px solid rgba(244,239,232,0.15);border-radius:6px;padding:5px 12px;font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(244,239,232,0.7);">Google SEO</span>
+            <span style="background:rgba(244,239,232,0.08);border:1px solid rgba(244,239,232,0.15);border-radius:6px;padding:5px 12px;font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(244,239,232,0.7);">Meta Ads</span>
+            <span style="background:rgba(244,239,232,0.08);border:1px solid rgba(244,239,232,0.15);border-radius:6px;padding:5px 12px;font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(244,239,232,0.7);">Product Marketing</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="border-top:1px solid var(--rule-light);padding-top:32px;margin-top:32px;">
+      <p style="font-family:var(--sans);font-size:0.66rem;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:rgba(244,239,232,0.4);margin:0 0 14px;">Core Skills</p>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;">
+
+        <!-- Google Ads -->
+        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(66,133,244,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(66,133,244,0.1);">
+          <svg width="14" height="14" viewBox="0 0 24 24" style="flex-shrink:0;">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Google Ads
+        </span>
+
+        <!-- Meta Ads -->
+        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(24,119,242,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(24,119,242,0.1);">
+          <svg width="14" height="14" viewBox="0 0 24 24" style="flex-shrink:0;">
+            <path fill="#1877F2" d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.971h-1.513c-1.491 0-1.956.93-1.956 1.883v2.27h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/>
+          </svg>
+          Meta Ads
+        </span>
+
+        <!-- SEO / AEO -->
+        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(52,168,83,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(52,168,83,0.1);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+            <circle cx="11" cy="11" r="7" stroke="#34A853" stroke-width="2.5"/>
+            <path d="m21 21-4.35-4.35" stroke="#34A853" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          SEO / AEO
+        </span>
+
+        <!-- Email Marketing -->
+        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(139,92,246,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(139,92,246,0.1);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+            <rect width="20" height="16" x="2" y="4" rx="2" stroke="#A78BFA" stroke-width="1.8" fill="rgba(139,92,246,0.18)"/>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" stroke="#A78BFA" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Email Marketing
+        </span>
+
+        <!-- Power BI -->
+        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(242,200,17,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(242,200,17,0.08);">
+          <svg width="13" height="14" viewBox="0 0 24 24" style="flex-shrink:0;">
+            <rect x="3" y="12" width="4" height="9" rx="1" fill="#F2C811"/>
+            <rect x="10" y="7" width="4" height="14" rx="1" fill="#F2C811" opacity="0.8"/>
+            <rect x="17" y="3" width="4" height="18" rx="1" fill="#F2C811" opacity="0.6"/>
+          </svg>
+          Power BI
+        </span>
+
+        <!-- HubSpot CRM -->
+        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(255,122,89,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(255,122,89,0.1);">
+          <svg width="14" height="14" viewBox="0 0 24 24" style="flex-shrink:0;">
+            <circle cx="12" cy="12" r="3" fill="#FF7A59"/>
+            <line x1="12" y1="2"    x2="12" y2="6"    stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
+            <line x1="12" y1="18"   x2="12" y2="22"   stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
+            <line x1="4.22" y1="4.22"  x2="7.05" y2="7.05"   stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
+            <line x1="16.95" y1="16.95" x2="19.78" y2="19.78" stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
+            <line x1="2"  y1="12" x2="6"  y2="12"  stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
+            <line x1="18" y1="12" x2="22" y2="12"  stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
+            <line x1="4.22"  y1="19.78" x2="7.05"  y2="16.95" stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
+            <line x1="16.95" y1="7.05"  x2="19.78" y2="4.22"  stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          HubSpot CRM
+        </span>
+
+        <!-- A/B Testing -->
+        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(244,239,232,0.2);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(244,239,232,0.06);">
+          <svg width="18" height="13" viewBox="0 0 32 22" style="flex-shrink:0;">
+            <rect x="0" y="2" width="13" height="18" rx="3" fill="#4285F4"/>
+            <rect x="19" y="2" width="13" height="18" rx="3" fill="#c0533a"/>
+            <text x="3" y="15" font-size="10" font-weight="800" fill="white" font-family="system-ui,sans-serif">A</text>
+            <text x="22" y="15" font-size="10" font-weight="800" fill="white" font-family="system-ui,sans-serif">B</text>
+          </svg>
+          A/B Testing
+        </span>
+
+        <!-- Canva -->
+        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(125,42,232,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(125,42,232,0.1);">
+          <svg width="14" height="14" viewBox="0 0 24 24" style="flex-shrink:0;">
+            <defs>
+              <linearGradient id="cg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#7D2AE8"/>
+                <stop offset="100%" stop-color="#00C4CC"/>
+              </linearGradient>
+            </defs>
+            <circle cx="12" cy="12" r="11" fill="url(#cg)"/>
+            <path fill="white" d="M16 14.7c-.5.8-1.3 1.3-2.2 1.3-1.7 0-3-1.4-3-3.2 0-1.8 1.3-3.2 3-3.2.8 0 1.6.4 2.1 1l1.9-1.9C16.8 7.5 15.3 7 13.8 7 10.3 7 7.5 9.7 7.5 13s2.8 6 6.3 6c1.6 0 3-.6 4.1-1.6L16 14.7z"/>
+          </svg>
+          Canva
+        </span>
+
       </div>
     </div>
   </div>
 </section>
 
+<!-- ═════════════════ WORK SECTION HEADER ═════════════════ -->
+<section id="work" style="background:var(--paper);padding:80px 6vw 20px;max-width:100%;">
+  <p style="font-family:var(--sans);font-size:0.72rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--terra);margin:0 0 14px;">The Work</p>
+  <h2 style="font-family:var(--serif);font-weight:800;font-size:clamp(2.8rem,6vw,5rem);line-height:1.05;color:var(--ink);margin:0 0 18px;">Selected Work.</h2>
+  <p style="font-family:var(--serif-2);font-style:italic;font-size:clamp(1rem,1.6vw,1.25rem);color:var(--muted);margin:0;">Four cases: strategy, execution, analytics, and the intersection of all three.</p>
+</section>
+
 <!-- ═════════════════ CASE STUDY 01 ═════════════════ -->
-<div class="case-wrap" id="work">
+<div class="case-wrap">
   <section class="case-scene" data-nav-theme="light">
     <aside class="case-left">
-      <div class="case-engagement-label depth-up"><span class="cel-type">Consulting Project</span><span class="cel-sep"> · </span><span class="cel-detail">UPBEAT Growth LLC · 2026</span></div>
+      <div class="case-engagement-label depth-up"><span class="cel-type">Consulting Project · Funnel Strategy + HubSpot</span><span class="cel-sep"> · </span><span class="cel-detail">UPBEAT Growth LLC · 2026</span></div>
       <div class="case-num depth-up">01</div>
-      <span class="case-tag depth-up d1" style="color: var(--terra);">Lead Generation</span>
+      <span class="case-tag depth-up d1" style="color: var(--terra);">Funnel Strategy · HubSpot · Email</span>
       <div class="case-meta">
         <div class="case-meta-row depth-up d2"><span class="case-meta-label">Client</span><span class="case-meta-value">UPBEAT Growth LLC</span></div>
         <div class="case-meta-row depth-up d2"><span class="case-meta-label">Channel</span><span class="case-meta-value">Paid Ads + Email</span></div>
         <div class="case-meta-row depth-up d3"><span class="case-meta-label">Goal</span><span class="case-meta-value">Lead Quality + Pipeline</span></div>
+        <div class="case-meta-row depth-up d3"><span class="case-meta-label">Stack</span><span class="case-meta-value">HubSpot · Lead Scoring · Email Automation · Quiz Architecture</span></div>
         <div class="case-meta-row depth-up d3"><span class="case-meta-label">Year</span><span class="case-meta-value">2026</span></div>
       </div>
     </aside>
@@ -1767,20 +2073,21 @@
       <h3 class="case-hook">
         The leads were coming in. <span class="ital">The right ones weren't staying.</span>
       </h3>
-      <p class="case-subtitle depth-up">A quiz funnel built for UPBEAT Growth LLC — designed to filter and warm leads before they ever got on a call.</p>
+      <p class="case-subtitle depth-up">A quiz funnel built for UPBEAT Growth LLC, designed to filter and warm leads before they ever got on a call.</p>
 
       <p class="case-section-label depth-up">The Challenge</p>
       <div class="case-body depth-up d1">
-        <p>Paid campaigns were driving traffic straight to a booking page — and the funnel was failing in two directions at once. <strong>The leads that did convert weren't ready to buy</strong>, burning the sales team's time on calls that went nowhere. <strong>And the leads that were actually qualified weren't converting at all</strong> — the jump from cold ad to calendar booking was too big an ask for someone making a serious decision.</p>
-        <p>Same structural flaw, two different failure modes. The targeting and creative weren't the problem — the funnel was just asking for too much, too soon.</p>
+        <p>Paid campaigns were driving traffic straight to a booking page, and the funnel was failing in two directions at once. <strong>The leads that did convert weren't ready to buy</strong>, burning the sales team's time on calls that went nowhere. <strong>And the leads that were actually qualified weren't converting at all:</strong> the jump from cold ad to calendar booking was too big an ask for someone making a serious decision.</p>
+        <p>Same structural flaw, two different failure modes. The targeting and creative weren't the problem; the funnel was just asking for too much, too soon.</p>
       </div>
 
       <div class="case-divider"></div>
 
       <p class="case-section-label depth-up">The Approach</p>
       <div class="case-body depth-up d1">
-        <p>I redesigned the acquisition flow around an <strong>8-stage quiz architecture</strong>: ad → quiz landing → questions → email capture → results page → segmented nurture → strategy call → customer. The quiz sorted leads into three tracks — Beginner, Intermediate, Advanced — each with a different follow-up from that point forward.</p>
-        <p>Behavioural lead scoring triggered sales outreach automatically once a contact crossed 40 points. The results page got rebuilt as the trust moment it should be — highest-intent point in the funnel, and it had been treated as an afterthought.</p>
+        <p>I redesigned the acquisition flow around an <strong>8-stage quiz architecture</strong>: ad → quiz landing → questions → email capture → results page → segmented nurture → strategy call → customer. The quiz sorted leads into three tracks (Beginner, Intermediate, Advanced), each with a different follow-up from that point forward.</p>
+        <p>Behavioural lead scoring triggered sales outreach automatically once a contact crossed 40 points. The results page got rebuilt as the trust moment it should be: highest-intent point in the funnel, and it had been treated as an afterthought.</p>
+        <p>The infrastructure ran on <strong>HubSpot</strong>: contact segmentation, behavioural lead scoring (threshold: 40 points to trigger sales outreach), and automated nurture sequences branching by quiz result track. Email sequences were written and scheduled for each of the three lead segments, with subject-line and content variation built in from the start. Every touchpoint from quiz entry to sales call was tracked, measurable, and improvable.</p>
       </div>
 
       <div class="case-divider"></div>
@@ -1804,13 +2111,14 @@
 <div class="case-wrap case-wrap--alt">
   <section class="case-scene" data-nav-theme="dark">
     <aside class="case-left">
-      <div class="case-engagement-label depth-up"><span class="cel-type">Consulting Project</span><span class="cel-sep"> · </span><span class="cel-detail">UPBEAT Growth LLC · 2026</span></div>
+      <div class="case-engagement-label depth-up"><span class="cel-type">Consulting Project · Paid Ads + CRM Automation</span><span class="cel-sep"> · </span><span class="cel-detail">UPBEAT Growth LLC · 2026</span></div>
       <div class="case-num depth-up">02</div>
-      <span class="case-tag depth-up d1">B2B Growth</span>
+      <span class="case-tag depth-up d1">Paid Ads · Webinar Strategy · CRM</span>
       <div class="case-meta">
         <div class="case-meta-row depth-up d2"><span class="case-meta-label">Client</span><span class="case-meta-value">UPBEAT Growth LLC</span></div>
         <div class="case-meta-row depth-up d2"><span class="case-meta-label">Channel</span><span class="case-meta-value">Paid Ads + Webinars</span></div>
         <div class="case-meta-row depth-up d3"><span class="case-meta-label">Goal</span><span class="case-meta-value">Pipeline + Authority</span></div>
+        <div class="case-meta-row depth-up d3"><span class="case-meta-label">Stack</span><span class="case-meta-value">Meta Ads · HubSpot · Lead Scoring · Retargeting</span></div>
         <div class="case-meta-row depth-up d3"><span class="case-meta-label">Year</span><span class="case-meta-value">2026</span></div>
       </div>
     </aside>
@@ -1819,18 +2127,19 @@
       <h3 class="case-hook">
         $45K in revenue. $4K in ad spend. <span class="ital">The funnel earns trust before asking for it.</span>
       </h3>
-      <p class="case-subtitle depth-up">A webinar funnel built for UPBEAT Growth LLC — using education to bridge cold traffic and real conversations.</p>
+      <p class="case-subtitle depth-up">A webinar funnel built for UPBEAT Growth LLC, using education to bridge cold traffic and real conversations.</p>
 
       <p class="case-section-label depth-up">The Challenge</p>
       <div class="case-body depth-up d1">
-        <p>The pipeline was running almost entirely on referrals. Paid acquisition had been tried — cold traffic to a contact form wasn't converting to meaningful conversations. <strong>I needed something between the initial ad click and the actual conversation</strong> — something that earned the meeting before asking for it.</p>
+        <p>The pipeline was running almost entirely on referrals. Paid acquisition had been tried: cold traffic to a contact form wasn't converting to meaningful conversations. <strong>I needed something between the initial ad click and the actual conversation,</strong> something that earned the meeting before asking for it.</p>
       </div>
 
       <div class="case-divider"></div>
 
       <p class="case-section-label depth-up">The Approach</p>
       <div class="case-body depth-up d1">
-        <p>I built a webinar-as-lead-gen system: targeted ads to drive registrations → a live session built around genuine value → lead scoring based on attendance and engagement → CRM automation with segmented follow-ups → retargeting for no-shows and non-converters. <strong>The webinar was proof of capability, not a pitch</strong> — that distinction is what made the follow-up conversations worth having.</p>
+        <p>I built a webinar-as-lead-gen system: targeted ads to drive registrations → a live session built around genuine value → lead scoring based on attendance and engagement → CRM automation with segmented follow-ups → retargeting for no-shows and non-converters. <strong>The webinar was proof of capability, not a pitch.</strong> That distinction is what made the follow-up conversations worth having.</p>
+        <p>Paid acquisition ran on <strong>Meta Ads</strong>, targeted to audience segments most likely to register, with retargeting sequences built separately for no-shows and non-converters post-event. <strong>HubSpot</strong> handled lead scoring based on attendance depth and post-webinar engagement, triggering personalised follow-up sequences automatically. The retargeting layer meant the ad spend kept working after the event ended, not just during registration.</p>
       </div>
 
       <div class="case-divider"></div>
@@ -1854,43 +2163,68 @@
 <div class="case-wrap">
   <section class="case-scene" data-nav-theme="light">
     <aside class="case-left">
-      <div class="case-engagement-label depth-up"><span class="cel-type">Paid Internship</span><span class="cel-sep"> · </span><span class="cel-detail">UPBEAT Growth LLC · New York</span></div>
+      <div class="case-engagement-label depth-up"><span class="cel-type">Agency Internship · SEO/AEO + Paid Media</span><span class="cel-sep"> · </span><span class="cel-detail">UPBEAT Growth LLC · New York</span></div>
       <div class="case-num depth-up">03</div>
-      <span class="case-tag depth-up d1" style="color: var(--terra);">Multi-Channel Campaigns</span>
+      <span class="case-tag depth-up d1" style="color: var(--terra);">Google Ads · Meta Ads · SEO / AEO · Email · Content</span>
       <div class="case-meta">
         <div class="case-meta-row depth-up d2"><span class="case-meta-label">Agency</span><span class="case-meta-value">UPBEAT Growth LLC</span></div>
         <div class="case-meta-row depth-up d2"><span class="case-meta-label">Verticals</span><span class="case-meta-value">Hospitality · Retail · Legal</span></div>
-        <div class="case-meta-row depth-up d3"><span class="case-meta-label">Role</span><span class="case-meta-value">Marketing Intern</span></div>
+        <div class="case-meta-row depth-up d3"><span class="case-meta-label">Stack</span><span class="case-meta-value">Google Ads · Meta Ads · SEO · AEO · Email · Canva</span></div>
         <div class="case-meta-row depth-up d3"><span class="case-meta-label">Location</span><span class="case-meta-value">New York City</span></div>
       </div>
     </aside>
 
     <div class="case-right">
       <h3 class="case-hook">
-        Three industries at once. <span class="ital">One discipline that runs through all of them.</span>
+        Three industries at once. <span class="ital">Every piece of content had to be found before it could convert.</span>
       </h3>
-      <p class="case-subtitle depth-up">Managing simultaneous campaigns across hospitality, retail, and legal — where each client needs a completely different approach but the rigour has to be consistent.</p>
+      <p class="case-subtitle depth-up">Managing simultaneous campaigns across hospitality, retail, and legal, where each client needs a completely different approach and every content decision had to be built for both the human reader and the answer engine.</p>
 
       <p class="case-section-label depth-up">The Challenge</p>
       <div class="case-body depth-up d1">
-        <p>At a growth agency, every client has a different business model, a different audience, and a different definition of success. The job isn't just running campaigns — it's getting inside each vertical fast enough to build the right strategy, not just apply the same playbook. <strong>Three industries in parallel means three sets of KPIs, three audiences, and three completely different creative angles — without letting any of them slip.</strong></p>
+        <p>At a growth agency, every client has a different business model, a different audience, and a different definition of success. The job isn't just running campaigns; it's getting inside each vertical fast enough to build the right strategy, not just apply the same playbook. <strong>Three industries in parallel means three sets of KPIs, three audiences, and three completely different creative angles, without letting any of them slip.</strong></p>
       </div>
 
       <div class="case-divider"></div>
 
       <p class="case-section-label depth-up">The Approach</p>
       <div class="case-body depth-up d1">
-        <p>Hospitality: booking-driven campaigns where urgency and social proof do the work. Retail: product-led creative with audience segmentation timed to inventory cycles. Legal: authority-first content where trust signals matter more than volume. Each vertical required a different creative and targeting strategy — but the same analytical foundation underneath: <strong>define the conversion event, build toward it, measure everything that matters.</strong></p>
-        <p>Alongside the agency work: my team won the TOFU Marketing Hackathon run by SURU Labs — building a complete channel strategy for THORN under competition pressure. That's where the multi-client rigour and the strategic instinct had to show up at the same time.</p>
+        <p><b>Hospitality:</b> booking-driven campaigns where urgency and social proof do the work. <b>Retail:</b> product-led creative with audience segmentation timed to inventory cycles. <b>Legal:</b> authority-first content where trust signals matter more than volume. Each vertical required a different creative and targeting strategy, but the same analytical foundation underneath: <strong>define the conversion event, build toward it, measure everything that matters.</strong></p>
+        <p>Alongside the agency work: my team won the TOFU Marketing Hackathon run by SURU Labs, building a complete channel strategy for THORN under competition pressure. That's where the multi-client rigour and the strategic instinct had to show up at the same time.</p>
+        <p>On <strong>Meta Ads and Google Ads</strong>, I managed 5–10 active ad sets per client simultaneously, setting up campaigns from scratch, defining audience targeting, and running 2–4 creative variants per campaign. Performance was monitored weekly; targeting and creative decisions were adjusted based on real data, not instinct. Alongside paid: segmented email campaigns with list management, subject-line A/B testing, and open rates consistently in the <strong>15–25% range</strong>. Content production covered social, email, blog, and website copy, all produced and scheduled across 5+ active client accounts at the same time.</p>
+      </div>
+
+      <div class="case-divider"></div>
+
+      <p class="case-section-label depth-up">The AEO Layer</p>
+      <div class="case-body depth-up d1">
+        <p>Across every client, content wasn't just being produced; it was being structured to answer specific questions. Blog posts, service pages, and social copy were built around the exact phrases a potential customer would type into Google or ask an AI assistant. <strong>Answer Engine Optimisation meant treating every content piece as a candidate for a featured snippet or a direct AI-generated answer:</strong> structuring headers as questions, leading paragraphs with direct answers, and building FAQ sections that matched real search intent. For the hospitality client, this meant owning "best Airbnb in [location]"-style queries. For the law firm, it meant structuring service pages so that Google's AI Overview would surface them for legal intent searches. For the jewelry retailer, it meant product descriptions built to answer "what is the best gift for X" directly. Same rigour, three completely different answer architectures.</p>
       </div>
 
       <div class="case-divider"></div>
 
       <p class="case-section-label depth-up">The Results</p>
-      <div class="case-results">
+      <div class="case-results" style="grid-template-columns: repeat(2, 1fr);">
         <div class="stat-block depth-up"><div class="stat-block-num">3</div><div class="stat-block-label">Verticals managed simultaneously at UPBEAT</div></div>
-        <div class="stat-block depth-up d1"><div class="stat-block-num">#1</div><div class="stat-block-label">TOFU Hackathon — SURU Labs</div></div>
-        <div class="stat-block depth-up d2"><div class="stat-block-num">NYC</div><div class="stat-block-label">Multi-client agency, New York City</div></div>
+        <div class="stat-block depth-up d1"><div class="stat-block-num">#1</div><div class="stat-block-label">TOFU Hackathon · SURU Labs</div></div>
+        <div class="stat-block depth-up d2"><div class="stat-block-num">Full Stack</div><div class="stat-block-label">Paid · SEO/AEO · Email · Content · Analytics</div></div>
+        <div class="stat-block depth-up d2"><div class="stat-block-num">AEO</div><div class="stat-block-label">Answer-optimised content architecture across 3 client verticals</div></div>
+      </div>
+
+      <!-- ── HACKATHON WIN CARD ── -->
+      <div class="hack-card" id="hackathonCard" role="button" tabindex="0" aria-label="Read the TOFU Hackathon case study">
+        <div class="hack-glow" id="hackGlow"></div>
+        <canvas class="hack-confetti-canvas" id="hackConfetti"></canvas>
+        <div class="hack-cup-wrap" id="hackCupWrap">
+          <canvas id="hackCupCanvas"></canvas>
+        </div>
+        <div class="hack-body">
+          <span class="hack-eyebrow">Competitive Win</span>
+          <h4 class="hack-title">#1 · TOFU Marketing Hackathon</h4>
+          <p class="hack-sub">SURU Labs · Cross-functional team · Full channel strategy for THORN</p>
+          <p class="hack-desc">Under competition pressure: campaign arc, channel selection, content plan, and KPIs, built and presented in one session. First place.</p>
+          <span class="hack-cta">Read the full story <span class="hack-arrow">→</span></span>
+        </div>
       </div>
 
       <button class="read-full depth-up d2" onclick="openViewer(2)">
@@ -1920,20 +2254,20 @@
       <h3 class="case-hook">
         A global bank's trading platform. Millions of users. <span class="ital">And data that wasn't being used.</span>
       </h3>
-      <p class="case-subtitle depth-up">Three years building the analytics infrastructure that connected user behaviour to campaign decisions — inside one of the world's largest financial institutions.</p>
+      <p class="case-subtitle depth-up">Three years building the analytics infrastructure that connected user behaviour to campaign decisions, inside one of the world's largest financial institutions.</p>
 
       <p class="case-section-label depth-up">The Challenge</p>
       <div class="case-body depth-up d1">
-        <p>Deutsche Bank's marketing team had data — campaign logs, platform activity, user behaviour signals across a live trading product. What they didn't have was a way to make it actionable. Reports lived in silos. Campaign decisions were made on instinct. <strong>Nobody could reliably answer which changes moved users to act — and which were just noise.</strong></p>
-        <p>My job, as an analyst embedded via TCS, was to build the infrastructure that answered that question — and kept answering it.</p>
+        <p>Deutsche Bank's marketing team had data: campaign logs, platform activity, user behaviour signals across a live trading product. What they didn't have was a way to make it actionable. Reports lived in silos. Campaign decisions were made on instinct. <strong>Nobody could reliably answer which changes moved users to act, and which were just noise.</strong></p>
+        <p>My job, as an analyst embedded via TCS, was to build the infrastructure that answered that question and kept answering it.</p>
       </div>
 
       <div class="case-divider"></div>
 
       <p class="case-section-label depth-up">The Approach</p>
       <div class="case-body depth-up d1">
-        <p>I built and maintained Power BI dashboards that pulled from campaign performance, user activity, and platform engagement — giving the marketing team a single source of truth for the first time. On top of that, I designed and ran A/B tests on the trading platform itself: testing copy, UI prompts, and CTA placements to isolate which changes drove measurable user action.</p>
-        <p>The computer science background mattered here. I could write the queries, understand the data pipeline, and work directly with the engineering and product teams. <strong>That cross-functional credibility is what turned analysis into actual decisions — not just slides.</strong></p>
+        <p>I built and maintained Power BI dashboards that pulled from campaign performance, user activity, and platform engagement, giving the marketing team a single source of truth for the first time. On top of that, I designed and ran A/B tests on the trading platform itself: testing copy, UI prompts, and CTA placements to isolate which changes drove measurable user action.</p>
+        <p>The computer science background mattered here. I could write the queries, understand the data pipeline, and work directly with the engineering and product teams. <strong>That cross-functional credibility is what turned analysis into actual decisions, not just slides.</strong></p>
       </div>
 
       <div class="case-divider"></div>
@@ -1953,10 +2287,119 @@
   </section>
 </div>
 
+<!-- ═════════════════ CASE STUDY 05 ═════════════════ -->
+<div class="case-wrap">
+  <section class="case-scene" data-nav-theme="light">
+    <aside class="case-left">
+      <div class="case-engagement-label depth-up"><span class="cel-type">The Extern Program</span><span class="cel-sep"> · </span><span class="cel-detail">Beats by Dre Brief · 2025</span></div>
+      <div class="case-num depth-up">05</div>
+      <span class="case-tag depth-up d1" style="color: var(--terra);">Consumer Research · AIDA</span>
+      <span class="case-tag depth-up d1" style="color: var(--terra); margin-top: 6px;">Externship Program</span>
+      <div class="case-meta">
+        <div class="case-meta-row depth-up d2"><span class="case-meta-label">Program</span><span class="case-meta-value">The Extern Program</span></div>
+        <div class="case-meta-row depth-up d2"><span class="case-meta-label">Company Brief</span><span class="case-meta-value">Beats by Dre</span></div>
+        <div class="case-meta-row depth-up d3"><span class="case-meta-label">Method</span><span class="case-meta-value">Survey Design · AIDA Mapping</span></div>
+        <div class="case-meta-row depth-up d3"><span class="case-meta-label">Output</span><span class="case-meta-value">Dashboard · ManyChat Bot</span></div>
+        <div class="case-meta-row depth-up d3"><span class="case-meta-label">Duration</span><span class="case-meta-value">July – Aug 2025</span></div>
+      </div>
+    </aside>
+
+    <div class="case-right">
+      <h3 class="case-hook">
+        A global audio brand. A consumer who buys on feeling but can't explain why. <span class="ital">That's the research brief.</span>
+      </h3>
+      <p class="case-subtitle depth-up">A structured externship program brief with Beats by Dre, using AIDA journey mapping and custom survey design to decode the gap between what consumers say and what actually drives the decision.</p>
+
+      <p class="case-section-label depth-up">The Challenge</p>
+      <div class="case-body depth-up d1">
+        <p>Beats by Dre competes in a market where purchase decisions are emotional and identity-driven. The brief: understand what's actually driving loyalty and repurchase, and where the customer journey breaks down for people who considered but didn't convert. The challenge was designing research that surfaced honest behavioural signals, not just socially acceptable answers.</p>
+      </div>
+
+      <div class="case-divider"></div>
+
+      <p class="case-section-label depth-up">The Approach</p>
+      <div class="case-body depth-up d1">
+        <p>I designed custom surveys in Google Forms structured around the AIDA framework, mapping Awareness, Interest, Desire, and Action signals across different buyer segments. Responses were analysed for patterns in decision triggers, loyalty drivers, and conversion drop-off points.</p>
+        <p>Insights were synthesised and delivered via two formats: a Gamma dashboard for stakeholder review, and a ManyChat chatbot that let stakeholders query findings interactively, turning a static research output into a navigable insight system.</p>
+      </div>
+
+      <div class="case-divider"></div>
+
+      <p class="case-section-label depth-up">The Results</p>
+      <div class="case-results">
+        <div class="stat-block depth-up"><div class="stat-block-num">AIDA</div><div class="stat-block-label">Full customer journey mapped across four decision stages</div></div>
+        <div class="stat-block depth-up d1"><div class="stat-block-num">Gamma + ManyChat</div><div class="stat-block-label">Insights delivered in two interactive formats</div></div>
+        <div class="stat-block depth-up d2"><div class="stat-block-num">Beats Brief</div><div class="stat-block-label">Consumer research structured for a global audio brand</div></div>
+      </div>
+
+      <p class="depth-up d2" style="font-style:italic;font-size:0.78rem;color:var(--muted);margin-top:24px;">Completed as part of The Extern Program, a structured externship platform placing candidates on real company briefs.</p>
+    </div>
+  </section>
+</div>
+
+<!-- ═════════════════ EXECUTION LAYER ═════════════════ -->
+<section data-nav-theme="light" style="background:var(--cream);padding:100px 56px 120px;">
+  <div style="max-width:1280px;margin:0 auto;">
+
+    <div style="margin-bottom:56px;">
+      <p style="font-family:var(--sans);font-size:0.72rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--terra);margin:0 0 14px;">Execution Layer</p>
+      <h2 style="font-family:var(--serif);font-weight:800;font-size:clamp(2.4rem,5vw,4rem);line-height:1.05;color:var(--ink);margin:0 0 16px;">The day-to-day.</h2>
+      <p style="font-family:var(--serif-2);font-style:italic;font-size:clamp(1rem,1.5vw,1.2rem);color:var(--muted);margin:0;">Strategy is what I design. This is what I operate.</p>
+    </div>
+
+    <div class="exec-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px;">
+
+      <div style="border-top:1px solid var(--rule);padding-top:24px;">
+        <p style="font-family:var(--sans);font-size:0.66rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--terra);margin:0 0 10px;">Paid Search</p>
+        <p style="font-family:var(--serif);font-weight:700;font-size:1.3rem;color:var(--ink);margin:0 0 12px;">Google Ads</p>
+        <p style="font-family:var(--sans);font-size:0.92rem;color:var(--muted);line-height:1.6;margin:0;">Campaign setup, keyword targeting, bid strategy, and conversion tracking. Structured ad groups, monitored performance across 5–10 active sets per client, and iterated on copy and targeting weekly.</p>
+      </div>
+
+      <div style="border-top:1px solid var(--rule);padding-top:24px;">
+        <p style="font-family:var(--sans);font-size:0.66rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--terra);margin:0 0 10px;">Paid Social</p>
+        <p style="font-family:var(--serif);font-weight:700;font-size:1.3rem;color:var(--ink);margin:0 0 12px;">Meta Ads</p>
+        <p style="font-family:var(--sans);font-size:0.92rem;color:var(--muted);line-height:1.6;margin:0;">End-to-end campaign setup on Meta Ads Manager. Audience targeting, lookalike builds, and A/B testing 2–4 creative variants per campaign across hospitality, retail, and legal clients.</p>
+      </div>
+
+      <div style="border-top:1px solid var(--rule);padding-top:24px;">
+        <p style="font-family:var(--sans);font-size:0.66rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--terra);margin:0 0 10px;">Email Marketing</p>
+        <p style="font-family:var(--serif);font-weight:700;font-size:1.3rem;color:var(--ink);margin:0 0 12px;">Segmentation &amp; Automation</p>
+        <p style="font-family:var(--sans);font-size:0.92rem;color:var(--muted);line-height:1.6;margin:0;">List management, audience segmentation, and automated nurture sequences in HubSpot. Subject-line testing and content optimization with open rates in the 15–25% range across active campaigns.</p>
+      </div>
+
+      <div style="border-top:1px solid var(--rule);padding-top:24px;">
+        <p style="font-family:var(--sans);font-size:0.66rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--terra);margin:0 0 10px;">Search Optimisation</p>
+        <p style="font-family:var(--serif);font-weight:700;font-size:1.3rem;color:var(--ink);margin:0 0 12px;">SEO &amp; AEO</p>
+        <p style="font-family:var(--sans);font-size:0.92rem;color:var(--muted);line-height:1.6;margin:0;">Google SEO certified. On-page optimisation, keyword research, content structuring for search. Applied across client websites during campaign work at UPBEAT Growth.</p>
+      </div>
+
+      <div style="border-top:1px solid var(--rule);padding-top:24px;">
+        <p style="font-family:var(--sans);font-size:0.66rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--terra);margin:0 0 10px;">Content Production</p>
+        <p style="font-family:var(--serif);font-weight:700;font-size:1.3rem;color:var(--ink);margin:0 0 12px;">Multi-Channel Content</p>
+        <p style="font-family:var(--sans);font-size:0.92rem;color:var(--muted);line-height:1.6;margin:0;">Social, email, blog, and website copy produced and scheduled across 5+ client accounts simultaneously. Branded creatives built in Canva; publishing cadence managed end-to-end.</p>
+      </div>
+
+      <div style="border-top:1px solid var(--rule);padding-top:24px;">
+        <p style="font-family:var(--sans);font-size:0.66rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--terra);margin:0 0 10px;">Analytics &amp; Reporting</p>
+        <p style="font-family:var(--serif);font-weight:700;font-size:1.3rem;color:var(--ink);margin:0 0 12px;">Power BI · Google Analytics</p>
+        <p style="font-family:var(--sans);font-size:0.92rem;color:var(--muted);line-height:1.6;margin:0;">Dashboard builds in Power BI for Deutsche Bank's marketing analytics function. Google Analytics certified. Reporting workflows standardised across 5+ client accounts at UPBEAT.</p>
+      </div>
+
+    </div>
+
+    <style>
+      @media (max-width: 768px) {
+        .exec-grid { grid-template-columns: 1fr !important; }
+      }
+    </style>
+
+  </div>
+</section>
+
 <!-- ═════════════════ NARR 6 — PRE-JOURNEY ═════════════════ -->
 <section class="narr-scene" data-nav-theme="light" id="journey">
   <div class="narr-stage">
-    <div class="narr-line narr-line--micro">A quick aside —</div>
+    <div class="narr-line narr-line--micro">A quick aside.</div>
     <div class="narr-line">how I got here</div>
     <div class="narr-line narr-line--italic">matters too.</div>
     <div class="narr-line narr-line--small">The credentials tell you what I've done. This part tells you how I think.</div>
@@ -1969,31 +2412,31 @@
     <div class="tl-item">
       <p class="tl-phase">Early Years</p>
       <h3 class="tl-title">I was the kid who always asked "why?"</h3>
-      <p class="tl-desc">Not just how things worked — why people <em>bought</em> what they bought. That curiosity about decisions and human behaviour became the through-line of everything since. It just needed an engineering degree to find its shape first.</p>
+      <p class="tl-desc">Not just how things worked: why people <em>bought</em> what they bought. That curiosity about decisions and human behaviour became the through-line of everything since. It just needed an engineering degree to find its shape first.</p>
       <span class="tl-tag">Personal</span>
     </div>
     <div class="tl-item">
       <p class="tl-phase">Undergrad</p>
-      <h3 class="tl-title">B.S. Computer Science — Walchand Institute of Technology</h3>
-      <p class="tl-desc">Graduated with a 3.82 CGPA. Learned to think in systems, logic, and data — without knowing yet that I'd spend the next chapter applying all of it to marketing problems instead of engineering ones.</p>
+      <h3 class="tl-title">B.S. Computer Science, Walchand Institute of Technology</h3>
+      <p class="tl-desc">Graduated with a 3.82 CGPA. Learned to think in systems, logic, and data, without knowing yet that I'd spend the next chapter applying all of it to marketing problems instead of engineering ones.</p>
       <span class="tl-tag">Education</span>
     </div>
     <div class="tl-item">
       <p class="tl-phase">First Real Role</p>
-      <h3 class="tl-title">Analyst at TCS — analytics support for Deutsche Bank's marketing function</h3>
-      <p class="tl-desc">Three years building Power BI dashboards, running A/B tests on a trading platform, and translating user behaviour data into campaign decisions for one of the world's largest banks. That's where the engineering brain met the marketing question — and the pivot became permanent.</p>
+      <h3 class="tl-title">Analyst at TCS: analytics support for Deutsche Bank's marketing function</h3>
+      <p class="tl-desc">Three years building Power BI dashboards, running A/B tests on a trading platform, and translating user behaviour data into campaign decisions for one of the world's largest banks. That's where the engineering brain met the marketing question, and the pivot became permanent.</p>
       <span class="tl-tag">Career</span>
     </div>
     <div class="tl-item">
       <p class="tl-phase">The Move</p>
       <h3 class="tl-title">Packed up Pune. Landed in New York City.</h3>
-      <p class="tl-desc">Enrolled in the M.S. Digital Marketing & Media (STEM) program at Yeshiva University's Katz School. Moved continents to study where the industry actually lives — and to be the kind of marketer who can operate in any room.</p>
+      <p class="tl-desc">Enrolled in the M.S. Digital Marketing & Media (STEM) program at Yeshiva University's Katz School. Moved continents to study where the industry actually lives, and to be the kind of marketer who can operate in any room.</p>
       <span class="tl-tag">Education</span>
     </div>
     <div class="tl-item">
       <p class="tl-phase">NYC Chapter</p>
       <h3 class="tl-title">Beats by Dre extern. UPBEAT Growth LLC agency. Then a hackathon win.</h3>
-      <p class="tl-desc">Consumer research at Beats by Dre. Multi-client campaign execution at UPBEAT Growth across hospitality, retail, and legal. Then the TOFU Marketing Hackathon — where my team and I took first place building a full channel strategy for THORN. New city, fast learning curve.</p>
+      <p class="tl-desc">Consumer research at Beats by Dre. Multi-client campaign execution at UPBEAT Growth across hospitality, retail, and legal. Then the TOFU Marketing Hackathon, where my team and I took first place building a full channel strategy for THORN. New city, fast learning curve.</p>
       <span class="tl-tag">Achievement</span>
     </div>
     <div class="tl-item">
@@ -2010,7 +2453,7 @@
   <div class="interests-header">
     <p class="interests-eyebrow">Off the clock</p>
     <h2 class="interests-headline">When I close the laptop.</h2>
-    <p class="interests-sub">The things that keep the thinking honest — and the instincts sharp.</p>
+    <p class="interests-sub">The things that keep the thinking honest, and the instincts sharp.</p>
   </div>
   <div class="interests-grid">
     <div class="int-tile">
@@ -2036,7 +2479,7 @@
   <div class="narr-stage narr-stage--center">
     <div class="narr-line">That's the work.</div>
     <div class="narr-line narr-line--italic">That's the person.</div>
-    <div class="narr-line narr-line--small">I just graduated. The next chapter starts now. If you're building a team that actually moves — this is the conversation you don't want to miss.</div>
+    <div class="narr-line narr-line--small">I just graduated. The next chapter starts now. If you're building a team that actually moves, this is the conversation you don't want to miss.</div>
     <a class="narr-cta-btn" href="#contact">Let's talk →</a>
   </div>
 </section>
@@ -2056,7 +2499,7 @@
     </h2>
 
     <p class="footer-sub">
-      Growth marketer. Data thinker. Campaign builder. Four years across Deutsche Bank, Beats by Dre, and NYC agency work — with a computer science foundation underneath it all. M.S. in hand since May 2026. If you've made it this far, you already know what I'm about. The next move is yours.
+      Growth marketer. Data thinker. Campaign builder. Four years across Deutsche Bank, Beats by Dre, and NYC agency work, with a computer science foundation underneath it all. M.S. in hand since May 2026. If you've made it this far, you already know what I'm about. The next move is yours.
     </p>
 
     <div class="footer-quick-stats">
@@ -2139,7 +2582,7 @@ Would love to connect!</textarea>
     <div class="congrats-header">
       <span class="congrats-emoji-big" style="font-size:2.2rem;">✉️</span>
       <h3 id="contactTitle">Let's talk.</h3>
-      <p>Drop a note — I read every message.</p>
+      <p>Drop a note. I read every message.</p>
     </div>
     <form class="congrats-form" id="contactForm">
       <div class="congrats-form-row">
@@ -2402,10 +2845,11 @@ Would love to connect!</textarea>
   const clock = new THREE.Clock();
   function renderCup() {
     requestAnimationFrame(renderCup);
-    const t = clock.getElapsedTime();
+    const delta = clock.getDelta();
+    const t = clock.elapsedTime;
     modelGroup.rotation.x = -0.02 + Math.sin(t * 0.35) * 0.012;
     modelGroup.position.y = Math.sin(t * 0.55) * 0.014;
-    controls.update();
+    controls.update(delta);
     renderer.render(scene, camera);
   }
   renderCup();
@@ -2523,6 +2967,15 @@ const LINE_STAGGER_MS   = 620;
 /* Extra delay before the first line of a new scene starts (scene "breath"). */
 const SCENE_ENTRY_DELAY = 120;
 
+function setProgressActive(active) {
+  if (progressBar) progressBar.classList.toggle('narr-active', active);
+}
+
+function setNarrActive(active) {
+  const coffeeIndicator = document.getElementById('virtualCoffeeIndicator');
+  if (coffeeIndicator) coffeeIndicator.classList.toggle('narr-active', active);
+}
+
 const narrObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (!entry.isIntersecting) return;
@@ -2537,6 +2990,15 @@ const narrObserver = new IntersectionObserver((entries) => {
         line.classList.add('in');
       }, SCENE_ENTRY_DELAY + i * LINE_STAGGER_MS);
     });
+
+    const sequenceDuration = SCENE_ENTRY_DELAY
+      + (lines.length - 1) * LINE_STAGGER_MS
+      + LINE_DURATION_MS
+      + 600;
+    setProgressActive(true);
+    setTimeout(() => setProgressActive(false), sequenceDuration);
+    setNarrActive(true);
+    setTimeout(() => setNarrActive(false), sequenceDuration);
   });
 }, {
   threshold: 0.18,        /* fire when ~18% of scene is visible */
@@ -2554,7 +3016,7 @@ function sizeNarrativeScenes() {
   document.querySelectorAll('.narr-scene').forEach(scene => {
     const lines = scene.querySelectorAll('.narr-line, .narr-cta-btn');
     const n = Math.max(1, lines.length);
-    scene.style.minHeight = (120 + (n - 1) * 36) + 'vh';
+    scene.style.minHeight = (108 + (n - 1) * 32) + 'vh';
   });
 }
 
@@ -2893,7 +3355,7 @@ CS_HTML[0] = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Case Study — Quiz Funnel for Lead Generation</title>
+<title>Case Study: Quiz Funnel for Lead Generation</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -3015,7 +3477,7 @@ CS_HTML[0] = `<!DOCTYPE html>
   <div class="cover-inner">
     <div class="cover-label">Consulting Project · UPBEAT Growth LLC · 2026</div>
     <h1>A Quiz Funnel for High-Intent Lead Generation</h1>
-    <p class="cover-sub">Redesigning the acquisition flow so that leads arrived filtered, segmented, and warm — before a sales conversation ever happened.</p>
+    <p class="cover-sub">Redesigning the acquisition flow so that leads arrived filtered, segmented, and warm, before a sales conversation ever happened.</p>
     <div class="cover-meta">
       <div><div class="meta-label">Client</div><div class="meta-value">UPBEAT Growth LLC</div></div>
       <div><div class="meta-label">Channel</div><div class="meta-value">Paid Ads + Email</div></div>
@@ -3030,9 +3492,9 @@ CS_HTML[0] = `<!DOCTYPE html>
   <!-- 01 -->
   <div class="section">
     <div class="section-header"><span class="section-number">01</span><h2>The Problem We Were Solving</h2></div>
-    <p>Paid campaigns were sending traffic straight to a booking page. The funnel was failing in two directions simultaneously — and that's what made it hard to diagnose from the outside.</p>
+    <p>Paid campaigns were sending traffic straight to a booking page. The funnel was failing in two directions simultaneously, and that's what made it hard to diagnose from the outside.</p>
     <p><strong>Problem one: the leads converting weren't the right ones.</strong> They booked calls because the friction was low, not because they'd made a real decision. The sales team was spending time on conversations that had no business happening yet, and close rates reflected that.</p>
-    <p><strong>Problem two: the leads worth having weren't converting at all.</strong> Asking someone to book a call with a company they discovered 40 seconds ago — for a service that costs real money — is too large an ask. The people who think carefully before buying were bouncing. The people clicking "Book Now" impulsively were the wrong fit.</p>
+    <p><strong>Problem two: the leads worth having weren't converting at all.</strong> Asking someone to book a call with a company they discovered 40 seconds ago, for a service that costs real money, is too large an ask. The people who think carefully before buying were bouncing. The people clicking "Book Now" impulsively were the wrong fit.</p>
     <div class="callout">
       <p>The funnel had no middle layer. Nothing between the ad click and the calendar to build trust, filter intent, or give the right person a reason to stay. That gap was the whole problem.</p>
     </div>
@@ -3042,44 +3504,44 @@ CS_HTML[0] = `<!DOCTYPE html>
   <!-- 02 -->
   <div class="section">
     <div class="section-header"><span class="section-number">02</span><h2>The Approach: A Quiz Instead of a Booking Page</h2></div>
-    <p>Instead of sending ad traffic to a booking page, we routed it to a quiz. Not a trivial one — a structured diagnostic that asks potential customers to describe their own situation: their challenges, their setup, their current results. By the time someone reaches their results, they've spent a few minutes thinking about their own problem through a framework we built. They feel understood before they've heard a pitch.</p>
+    <p>Instead of sending ad traffic to a booking page, we routed it to a quiz. Not a trivial one: a structured diagnostic that asks potential customers to describe their own situation, their challenges, their setup, their current results. By the time someone reaches their results, they've spent a few minutes thinking about their own problem through a framework we built. They feel understood before they've heard a pitch.</p>
     <p>That's the mechanism. Someone who's done that level of self-reflection arrives as a fundamentally different lead than someone who clicked an ad and landed on a calendar. They're warmer, more self-aware, and much more ready for a real conversation.</p>
 
     <div class="pull">"A quiz feels like a free consultation. A booking page feels like a sales call. Only one of those gets clicked by someone who's curious but not yet ready to buy."</div>
 
     <p>Good quiz titles are the ones that make someone stop scrolling because they actually want to know the answer:</p>
     <ul class="clean">
-      <li>"Why Are You Not Getting Leads?" — hits a felt pain, makes them click to find out</li>
-      <li>"What's Your Business Growth Score?" — benchmarking psychology, curiosity does the work</li>
-      <li>"How Ready Is Your Business for Paid Ads?" — qualifies while creating genuine interest</li>
-      <li>"Is Your Marketing Strategy Actually Working?" — plants productive doubt in exactly the right people</li>
+      <li>"Why Are You Not Getting Leads?" hits a felt pain, makes them click to find out</li>
+      <li>"What's Your Business Growth Score?" uses benchmarking psychology, curiosity does the work</li>
+      <li>"How Ready Is Your Business for Paid Ads?" qualifies while creating genuine interest</li>
+      <li>"Is Your Marketing Strategy Actually Working?" plants productive doubt in exactly the right people</li>
     </ul>
-    <p>None of those feel like marketing. That's the whole point. You're not selling yet — you're starting a conversation. Diagnose first, then prescribe.</p>
+    <p>None of those feel like marketing. That's the whole point. You're not selling yet: you're starting a conversation. Diagnose first, then prescribe.</p>
   </div>
   <hr class="rule">
 
   <!-- 03 -->
   <div class="section">
     <div class="section-header"><span class="section-number">03</span><h2>The Target Audience</h2></div>
-    <p>Quiz funnels work best when the buying decision involves some trust — when your potential customer needs to believe in you before they pay. If your service is low-ticket and transactional, you probably don't need this level of architecture. But if you're selling strategy, consulting, marketing services, SaaS — anything where the relationship matters — this is the right structure.</p>
-    <p>The people you want walking into this funnel are decision-makers who already have the problem you solve. They're not discovering that the problem exists — they're trying to figure out who to trust with fixing it.</p>
+    <p>Quiz funnels work best when the buying decision involves some trust, when your potential customer needs to believe in you before they pay. If your service is low-ticket and transactional, you probably don't need this level of architecture. But if you're selling strategy, consulting, marketing services, SaaS: anything where the relationship matters, this is the right structure.</p>
+    <p>The people you want walking into this funnel are decision-makers who already have the problem you solve. They're not discovering that the problem exists; they're trying to figure out who to trust with fixing it.</p>
     <ul class="clean">
       <li>Small and mid-size business owners who sign the contracts themselves</li>
       <li>D2C founders who've scaled one channel and hit a wall trying to grow past it</li>
       <li>B2B companies with a longer sales cycle that need leads to be warmer before sales gets involved</li>
-      <li>Marketing managers under pressure to hit growth numbers — and open to outside perspective</li>
+      <li>Marketing managers under pressure to hit growth numbers, open to outside perspective</li>
     </ul>
   </div>
   <hr class="rule">
 
   <!-- 04 -->
   <div class="section">
-    <div class="section-header"><span class="section-number">04</span><h2>How the Funnel Works — Stage by Stage</h2></div>
+    <div class="section-header"><span class="section-number">04</span><h2>How the Funnel Works: Stage by Stage</h2></div>
     <p>Think of this as eight connected conversations, not eight separate steps. Each one earns the right to have the next one. Skip any of them and the whole thing loses momentum.</p>
 
     <div class="funnel">
       <div class="funnel-step"><span class="funnel-label">Ad</span><span class="funnel-desc">Gets the right person's attention</span></div>
-      <div class="funnel-step"><span class="funnel-label">Quiz Landing Page</span><span class="funnel-desc">Low-friction — no commitment yet</span></div>
+      <div class="funnel-step"><span class="funnel-label">Quiz Landing Page</span><span class="funnel-desc">Low-friction, no commitment yet</span></div>
       <div class="funnel-step"><span class="funnel-label">Quiz Questions</span><span class="funnel-desc">They engage, you learn about them</span></div>
       <div class="funnel-step"><span class="funnel-label">Email Capture</span><span class="funnel-desc">Results exchanged for contact info</span></div>
       <div class="funnel-step"><span class="funnel-label">Results Page</span><span class="funnel-desc">This is where trust actually forms</span></div>
@@ -3088,13 +3550,13 @@ CS_HTML[0] = `<!DOCTYPE html>
       <div class="funnel-step"><span class="funnel-label">Customer ✓</span><span class="funnel-desc">Revenue</span></div>
     </div>
 
-    <p>One thing people consistently underinvest in: the results page. Most treat it as a delivery mechanism — here are your results, bye. But right after someone finishes the quiz, they're the most engaged they're ever going to be. They just spent five minutes thinking about their problem. The results page is your best sales tool if you use it right. Give them something genuinely valuable there. Something that makes them think "this brand actually gets it." That's what moves them to book.</p>
+    <p>One thing people consistently underinvest in: the results page. Most treat it as a delivery mechanism (here are your results, bye). But right after someone finishes the quiz, they're the most engaged they're ever going to be. They just spent five minutes thinking about their problem. The results page is your best sales tool if you use it right. Give them something genuinely valuable there. Something that makes them think "this brand actually gets it." That's what moves them to book.</p>
   </div>
   <hr class="rule">
 
   <!-- 05 -->
   <div class="section">
-    <div class="section-header"><span class="section-number">05</span><h2>Segmentation — Three Groups, Three Follow-up Tracks</h2></div>
+    <div class="section-header"><span class="section-number">05</span><h2>Segmentation: Three Groups, Three Follow-up Tracks</h2></div>
     <p>Here's what the quiz gives you that most lead gen strategies don't: actual information about where each person is. A founder who's never run a paid ad needs completely different messaging than someone spending $15K a month and frustrated with the results. Sending them the same follow-up email is a waste of both their time and yours.</p>
 
     <div class="segments">
@@ -3106,23 +3568,23 @@ CS_HTML[0] = `<!DOCTYPE html>
       <div class="segment">
         <div class="segment-level">Segment B</div>
         <div class="segment-name">Intermediate</div>
-        <div class="segment-desc">Running ads, leads aren't coming. They know something's off — help them diagnose what, and position yourself as the fix.</div>
+        <div class="segment-desc">Running ads, leads aren't coming. They know something's off; help them diagnose what and position yourself as the fix.</div>
       </div>
       <div class="segment">
         <div class="segment-level">Segment C</div>
         <div class="segment-name">Advanced</div>
-        <div class="segment-desc">Getting leads but they're not converting. The problem is downstream — address their specific sales system gap.</div>
+        <div class="segment-desc">Getting leads but they're not converting. The problem is downstream; address their specific sales system gap.</div>
       </div>
     </div>
 
-    <p>When someone reads your email and thinks "this is literally my situation" — that's when they reply. Personalization isn't a nice-to-have in a quiz funnel. It's the whole mechanism.</p>
+    <p>When someone reads your email and thinks "this is literally my situation", that's when they reply. Personalization isn't a nice-to-have in a quiz funnel. It's the whole mechanism.</p>
   </div>
   <hr class="rule">
 
   <!-- 06 -->
   <div class="section">
-    <div class="section-header"><span class="section-number">06</span><h2>Lead Scoring — Making Intent Visible and Actionable</h2></div>
-    <p>One of the most common complaints I've seen from sales teams is that marketing sends them unqualified leads. And one of the most common complaints from marketing is that sales doesn't follow up properly. Lead scoring is what ends that conversation — because it makes intent visible, automatically.</p>
+    <div class="section-header"><span class="section-number">06</span><h2>Lead Scoring: Making Intent Visible and Actionable</h2></div>
+    <p>One of the most common complaints I've seen from sales teams is that marketing sends them unqualified leads. And one of the most common complaints from marketing is that sales doesn't follow up properly. Lead scoring is what ends that conversation, making intent visible automatically.</p>
     <p>You score based on behavior, not what someone fills in a form. Behavior doesn't lie the way form fields do.</p>
 
     <div class="score-grid">
@@ -3141,8 +3603,8 @@ CS_HTML[0] = `<!DOCTYPE html>
 
   <!-- 07 -->
   <div class="section">
-    <div class="section-header"><span class="section-number">07</span><h2>Retargeting — Bringing Back the Ones Who Left</h2></div>
-    <p>Most people who click your ad are not going to convert on that visit. That's not failure — that's just how people make decisions. They need to see you a few times. They need to feel like you keep showing up with the right message. Retargeting is how you stay in the room without being annoying about it.</p>
+    <div class="section-header"><span class="section-number">07</span><h2>Retargeting: Bringing Back the Ones Who Left</h2></div>
+    <p>Most people who click your ad are not going to convert on that visit. That's not failure: that's just how people make decisions. They need to see you a few times. They need to feel like you keep showing up with the right message. Retargeting is how you stay in the room without being annoying about it.</p>
     <div class="two-col">
       <div>
         <p><strong>Who to bring back:</strong></p>
@@ -3162,14 +3624,14 @@ CS_HTML[0] = `<!DOCTYPE html>
         </ul>
       </div>
     </div>
-    <p>Each of those audiences needs a different message. The person who abandoned mid-quiz needs a different nudge than the person who finished it but never booked. Don't show them the same ad again — that's not retargeting, that's just repetition.</p>
+    <p>Each of those audiences needs a different message. The person who abandoned mid-quiz needs a different nudge than the person who finished it but never booked. Don't show them the same ad again; that's not retargeting, that's just repetition.</p>
   </div>
   <hr class="rule">
 
   <!-- 08 -->
   <div class="section">
-    <div class="section-header"><span class="section-number">08</span><h2>The Numbers — Projected Funnel Performance</h2></div>
-    <p>These are projected benchmarks — pulled from industry averages for quiz funnels running in service businesses. Your actual numbers will depend on how sharp your quiz topic is, how relevant your audience is, and how well your email sequence is written. But this gives you a realistic picture of what a well-built funnel can produce.</p>
+    <div class="section-header"><span class="section-number">08</span><h2>The Numbers: Projected Funnel Performance</h2></div>
+    <p>These are projected benchmarks, pulled from industry averages for quiz funnels running in service businesses. Your actual numbers will depend on how sharp your quiz topic is, how relevant your audience is, and how well your email sequence is written. But this gives you a realistic picture of what a well-built funnel can produce.</p>
 
     <table>
       <thead><tr><th>Funnel Stage</th><th>Projected Users</th><th>Drop-off</th></tr></thead>
@@ -3206,7 +3668,7 @@ CS_HTML[0] = `<!DOCTYPE html>
 
     <div class="note">
       <div class="note-label">Honest Context</div>
-      <p>A 10:1 LTV:CAC ratio is the ceiling of what a mature, optimized version of this funnel can do — not what it does on day one. Most well-built quiz funnels land somewhere between 4:1 and 6:1 in the first 60 days, and climb from there as you fix drop-off points. <strong>That's still a very strong business case for implementation.</strong> The math works even when the funnel is still learning.</p>
+      <p>A 10:1 LTV:CAC ratio is the ceiling of what a mature, optimized version of this funnel can do, not what it does on day one. Most well-built quiz funnels land somewhere between 4:1 and 6:1 in the first 60 days, and climb from there as you fix drop-off points. <strong>That's still a very strong business case for implementation.</strong> The math works even when the funnel is still learning.</p>
     </div>
   </div>
   <hr class="rule">
@@ -3217,10 +3679,10 @@ CS_HTML[0] = `<!DOCTYPE html>
     <table>
       <thead><tr><th>What You Need</th><th>Tool</th><th>Why This One</th></tr></thead>
       <tbody>
-        <tr><td>Quiz builder</td><td>Typeform</td><td>Completion rates are noticeably higher than cheaper alternatives — the UX difference is real</td></tr>
-        <tr><td>Landing page</td><td>Webflow</td><td>Fast, clean, no design ceiling — you want this page to convert, not just exist</td></tr>
+        <tr><td>Quiz builder</td><td>Typeform</td><td>Completion rates are noticeably higher than cheaper alternatives; the UX difference is real</td></tr>
+        <tr><td>Landing page</td><td>Webflow</td><td>Fast, clean, no design ceiling: you want this page to convert, not just exist</td></tr>
         <tr><td>Email + CRM</td><td>HubSpot</td><td>Handles segmentation, scoring and pipeline in one place so you're not stitching tools together</td></tr>
-        <tr><td>Paid ads</td><td>Facebook / LinkedIn</td><td>Facebook for volume, LinkedIn for B2B targeting — if budget is under $3K/mo, pick one</td></tr>
+        <tr><td>Paid ads</td><td>Facebook / LinkedIn</td><td>Facebook for volume, LinkedIn for B2B targeting; if budget is under $3K/mo, pick one</td></tr>
         <tr><td>Automation</td><td>Zapier</td><td>Connects quiz → CRM → email sequence without writing a line of code</td></tr>
         <tr><td>Analytics</td><td>GA4</td><td>So you know exactly where in the funnel people are dropping off</td></tr>
       </tbody>
@@ -3231,14 +3693,14 @@ CS_HTML[0] = `<!DOCTYPE html>
 
   <!-- 10 -->
   <div class="section">
-    <div class="section-header"><span class="section-number">10</span><h2>What to Test — and in What Order</h2></div>
+    <div class="section-header"><span class="section-number">10</span><h2>What to Test, and in What Order</h2></div>
     <p>Growth in a quiz funnel comes from fixing things in sequence, top to bottom. Testing the email sequence when nobody's completing the quiz is like redecorating a house with a leaky roof. Fix the leak first.</p>
     <ul class="clean">
-      <li><strong>Start with the quiz title and ad headline</strong> — if people aren't starting the quiz, nothing downstream matters yet</li>
-      <li><strong>Then the number of questions</strong> — five is usually the ceiling before completion rates fall off; every extra question costs you completions</li>
-      <li><strong>Then the results page</strong> — is it giving something genuinely useful, or just telling them what they already knew?</li>
-      <li><strong>Then email subject lines</strong> — open rate tells you if the subject line works; click rate tells you if the content does</li>
-      <li><strong>Finally, the CTA on the booking page</strong> — small copy changes here move the needle more than most people expect</li>
+      <li><strong>Start with the quiz title and ad headline.</strong> If people aren't starting the quiz, nothing downstream matters yet.</li>
+      <li><strong>Then the number of questions.</strong> Five is usually the ceiling before completion rates fall off; every extra question costs you completions.</li>
+      <li><strong>Then the results page.</strong> Is it giving something genuinely useful, or just telling them what they already knew?</li>
+      <li><strong>Then email subject lines.</strong> Open rate tells you if the subject line works; click rate tells you if the content does.</li>
+      <li><strong>Finally, the CTA on the booking page.</strong> Small copy changes here move the needle more than most people expect.</li>
     </ul>
   </div>
   <hr class="rule">
@@ -3262,9 +3724,9 @@ CS_HTML[0] = `<!DOCTYPE html>
       <h3>What this case study is really showing you</h3>
       <p class="closer-sub">If I joined your team, this is the kind of thinking I'd bring to your growth problems.</p>
       <ul>
-        <li>I build systems — not campaigns that run once and go quiet</li>
+        <li>I build systems, not campaigns that run once and go quiet</li>
         <li>I start with the customer: what do they need to feel before they buy, and how do we create that at scale?</li>
-        <li>Every strategy ties back to real numbers — CAC, LTV, and revenue. Not just clicks and impressions.</li>
+        <li>Every strategy ties back to real numbers: CAC, LTV, and revenue. Not just clicks and impressions.</li>
         <li>I know a funnel at launch is a hypothesis. The work is in testing it systematically until it performs.</li>
         <li>I think about marketing and sales as one pipeline, not two separate teams with separate goals.</li>
       </ul>
@@ -3282,7 +3744,7 @@ CS_HTML[1] = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Case Study — Webinar as a B2B Lead Generation Engine</title>
+<title>Case Study: Webinar as a B2B Lead Generation Engine</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -3419,7 +3881,7 @@ CS_HTML[1] = `<!DOCTYPE html>
     <div>
       <div class="cover-stat-label">Projected Revenue</div>
       <div class="cover-stat-value blue">$45K</div>
-      <div class="cover-stat-sub">On $4K spend — see Section 09</div>
+      <div class="cover-stat-sub">On $4K spend (see Section 09)</div>
     </div>
     <div>
       <div class="cover-stat-label">Projected CAC</div>
@@ -3440,32 +3902,32 @@ CS_HTML[1] = `<!DOCTYPE html>
   <!-- 01 -->
   <div class="section">
     <div class="section-header"><span class="section-num">01</span><h2>Where the Pipeline Was Breaking Down</h2></div>
-    <p>The existing acquisition strategy was paid ads driving cold traffic to a contact form. Call booking rates were low, and the calls that did happen rarely converted — most of the people arriving weren't ready to make a decision about a service they'd just heard about.</p>
-    <p>The problem wasn't the creative or the targeting. It was the architecture. Asking a cold audience to book a sales call — for something that costs real money and requires genuine trust — is too big a jump. Most people don't make it. The ones who do usually weren't the right fit.</p>
+    <p>The existing acquisition strategy was paid ads driving cold traffic to a contact form. Call booking rates were low, and the calls that did happen rarely converted, as most of the people arriving weren't ready to make a decision about a service they'd just heard about.</p>
+    <p>The problem wasn't the creative or the targeting. It was the architecture. Asking a cold audience to book a sales call, for something that costs real money and requires genuine trust, is too big a jump. Most people don't make it. The ones who do usually weren't the right fit.</p>
     <p>The pipeline was paying for conversations that shouldn't have happened yet.</p>
     <div class="callout">
-      <p>The question that shaped the strategy: <strong>what does someone need to know, see, and believe before a sales conversation is actually worth having?</strong> The answer — know you, respect how you think, believe you can solve their specific problem — became the design brief for the webinar.</p>
+      <p>The question that shaped the strategy: <strong>what does someone need to know, see, and believe before a sales conversation is actually worth having?</strong> The answer (know you, respect how you think, believe you can solve their specific problem) became the design brief for the webinar.</p>
     </div>
   </div>
   <hr class="rule">
 
   <!-- 02 -->
   <div class="section">
-    <div class="section-header"><span class="section-num">02</span><h2>The Idea — Teach First, Sell Later</h2></div>
+    <div class="section-header"><span class="section-num">02</span><h2>The Idea: Teach First, Sell Later</h2></div>
     <p>Running a free educational webinar sounds almost too simple when you first hear it. But think about what actually happens when someone attends one of yours. They've carved out an hour of their day. They've watched you think through a problem live. They've seen how you approach things, what you prioritize, how you explain complexity. By the time it's over, they have a real opinion about whether you're the kind of people they want to work with.</p>
-    <p>That's an enormous head start going into a sales conversation. You're not introducing yourself on the call — you're continuing a relationship that's already started. The prospect has already done most of the evaluation. That's why webinar-sourced leads close faster and at higher rates than cold traffic almost every time.</p>
+    <p>That's an enormous head start going into a sales conversation. You're not introducing yourself on the call; you're continuing a relationship that's already started. The prospect has already done most of the evaluation. That's why webinar-sourced leads close faster and at higher rates than cold traffic almost every time.</p>
 
     <div class="pull">"The webinar is not the product. It's proof that the product is worth having."</div>
 
-    <p>And it works for any B2B service where the buyer needs to believe in your judgment before they sign — agencies, SaaS, consulting, IT, finance, AI services. If your customer needs to trust you first, this is the right architecture.</p>
+    <p>And it works for any B2B service where the buyer needs to believe in your judgment before they sign: agencies, SaaS, consulting, IT, finance, AI services. If your customer needs to trust you first, this is the right architecture.</p>
   </div>
   <hr class="rule">
 
   <!-- 03 -->
   <div class="section">
     <div class="section-header"><span class="section-num">03</span><h2>Who You're Actually Trying to Get in the Room</h2></div>
-    <p>The biggest mistake with webinar funnels is going too broad on audience. "Business owners interested in marketing" is not a useful target. You need to know exactly who you're building this for — their role, their specific frustration, and where they are in figuring out that they need outside help.</p>
-    <p>The ideal webinar attendee for a B2B service is someone who already has the problem you solve, already suspects they need help, and is in the process of deciding who to trust with it. That's a very specific moment — and the webinar topic is what gets their attention during it.</p>
+    <p>The biggest mistake with webinar funnels is going too broad on audience. "Business owners interested in marketing" is not a useful target. You need to know exactly who you're building this for: their role, their specific frustration, and where they are in figuring out that they need outside help.</p>
+    <p>The ideal webinar attendee for a B2B service is someone who already has the problem you solve, already suspects they need help, and is in the process of deciding who to trust with it. That's a very specific moment, and the webinar topic is what gets their attention during it.</p>
     <div class="icp-grid">
       <div class="icp-card">
         <div class="icp-title">D2C Founders</div>
@@ -3489,8 +3951,8 @@ CS_HTML[1] = `<!DOCTYPE html>
 
   <!-- 04 -->
   <div class="section">
-    <div class="section-header"><span class="section-num">04</span><h2>The Funnel — What Each Stage Is Actually Doing</h2></div>
-    <p>Seven stages. Each one earns the right to have the next conversation. The whole thing falls apart if you rush through any of them — especially the follow-up, which is where most webinar funnels quietly bleed out.</p>
+    <div class="section-header"><span class="section-num">04</span><h2>The Funnel: What Each Stage Is Actually Doing</h2></div>
+    <p>Seven stages. Each one earns the right to have the next conversation. The whole thing falls apart if you rush through any of them, especially the follow-up, which is where most webinar funnels quietly bleed out.</p>
 
     <div class="pipeline">
       <div class="pipe-step">Ads / Content<div class="pipe-sub">Awareness</div></div>
@@ -3506,32 +3968,32 @@ CS_HTML[1] = `<!DOCTYPE html>
       <thead><tr><th>Stage</th><th>What's really happening here</th></tr></thead>
       <tbody>
         <tr><td>Ads / Content</td><td>Reaching the right people at the moment they're thinking about the problem</td></tr>
-        <tr><td>Registration</td><td>Converting curiosity into a small commitment — they've put it in their calendar</td></tr>
-        <tr><td>Webinar</td><td>An hour of showing how you think — this is the trust-building event</td></tr>
+        <tr><td>Registration</td><td>Converting curiosity into a small commitment; they've put it in their calendar</td></tr>
+        <tr><td>Webinar</td><td>An hour of showing how you think; this is the trust-building event</td></tr>
         <tr><td>Email follow-up</td><td>Keeping the conversation alive for the 80% who didn't book immediately after</td></tr>
         <tr><td>Strategy Call</td><td>A real conversation between two people who already know each other a little</td></tr>
         <tr><td>Proposal</td><td>Making a specific offer to someone who already wants to work with you</td></tr>
-        <tr><td>Customer</td><td>Revenue — and the start of a relationship worth investing in</td></tr>
+        <tr><td>Customer</td><td>Revenue, and the start of a relationship worth investing in</td></tr>
       </tbody>
     </table>
 
-    <p>The email follow-up sequence is the most under-built part of most webinar funnels. People run the webinar, send one recap email, and then go quiet. But 80% of your eventual customers from this funnel won't book immediately after the webinar — they'll come through the follow-up sequence over the next two to three weeks. That sequence is where the real revenue is.</p>
+    <p>The email follow-up sequence is the most under-built part of most webinar funnels. People run the webinar, send one recap email, and then go quiet. But 80% of your eventual customers from this funnel won't book immediately after the webinar; they'll come through the follow-up sequence over the next two to three weeks. That sequence is where the real revenue is.</p>
   </div>
   <hr class="rule">
 
   <!-- 05 -->
   <div class="section">
-    <div class="section-header"><span class="section-num">05</span><h2>Segmentation — Speak to the Situation, Not Just the Person</h2></div>
+    <div class="section-header"><span class="section-num">05</span><h2>Segmentation: Speak to the Situation, Not Just the Person</h2></div>
     <p>Every attendee registered because the webinar topic spoke to something they're dealing with. But what they're dealing with specifically is different. A founder trying to build their first lead generation system needs completely different follow-up content than one who already has a funnel running but can't figure out why it's not converting.</p>
     <p>When you send the same email to both of them, neither of them feels like you're talking to them specifically. That's the gap that segmentation closes.</p>
     <div class="two-col">
       <ul class="clean">
-        <li>Company size and industry — context for every piece of advice you give them</li>
-        <li>Their stated challenge — what made them show up to this webinar specifically</li>
+        <li>Company size and industry: context for every piece of advice you give them</li>
+        <li>Their stated challenge: what made them show up to this webinar specifically</li>
       </ul>
       <ul class="clean">
-        <li>Budget range — signals where they are in their decision-making process</li>
-        <li>Stage of business — changes what they're ready to hear and act on</li>
+        <li>Budget range: signals where they are in their decision-making process</li>
+        <li>Stage of business: changes what they're ready to hear and act on</li>
       </ul>
     </div>
     <p>The goal is for every person who opens your follow-up email to feel like it was written for their exact situation. Because it was.</p>
@@ -3540,9 +4002,9 @@ CS_HTML[1] = `<!DOCTYPE html>
 
   <!-- 06 -->
   <div class="section">
-    <div class="section-header"><span class="section-num">06</span><h2>Lead Scoring — Stop Letting Sales Guess Who's Ready</h2></div>
-    <p>Someone who registered, attended, stayed for 45 minutes, and clicked three links in your follow-up emails is a very different person from someone who registered and never showed up. Treating them the same way — routing both to the sales team, or routing neither — is a mistake that costs deals.</p>
-    <p>Lead scoring makes the difference between those two people visible and actionable, automatically. You score based on what people actually do — not what they say they're interested in.</p>
+    <div class="section-header"><span class="section-num">06</span><h2>Lead Scoring: Stop Letting Sales Guess Who's Ready</h2></div>
+    <p>Someone who registered, attended, stayed for 45 minutes, and clicked three links in your follow-up emails is a very different person from someone who registered and never showed up. Treating them the same way, routing both to the sales team or routing neither, is a mistake that costs deals.</p>
+    <p>Lead scoring makes the difference between those two people visible and actionable, automatically. You score based on what people actually do, not what they say they're interested in.</p>
 
     <div class="score-row">
       <div class="score-card"><div class="score-pts">+10</div><div class="score-action">Registered for webinar</div></div>
@@ -3553,14 +4015,14 @@ CS_HTML[1] = `<!DOCTYPE html>
     </div>
 
     <div class="callout">
-      <p>Score above 40 → sales reaches out. Below 40 → stays in the nurture sequence. <strong>This keeps the sales team focused on people who are actually ready</strong> — and keeps everyone else getting warmed up until they are.</p>
+      <p>Score above 40 → sales reaches out. Below 40 → stays in the nurture sequence. <strong>This keeps the sales team focused on people who are actually ready,</strong> keeping everyone else getting warmed up until they are.</p>
     </div>
   </div>
   <hr class="rule">
 
   <!-- 07 -->
   <div class="section">
-    <div class="section-header"><span class="section-num">07</span><h2>CRM Pipeline — No Lead Gets Lost, No Call Gets Wasted</h2></div>
+    <div class="section-header"><span class="section-num">07</span><h2>CRM Pipeline: No Lead Gets Lost, No Call Gets Wasted</h2></div>
     <p>The handoff between marketing and sales is where most B2B pipelines leak. Leads generated, no one followed up. Calls booked, but sales had no context going in. Proposals sent, no tracking on what happened next. A clear CRM pipeline with defined stages fixes all of that.</p>
     <div class="crm-steps">
       <div class="crm-step"><span class="crm-step-num">1</span>New Lead</div>
@@ -3579,8 +4041,8 @@ CS_HTML[1] = `<!DOCTYPE html>
 
   <!-- 08 -->
   <div class="section">
-    <div class="section-header"><span class="section-num">08</span><h2>Retargeting — They Left. That Doesn't Mean It's Over.</h2></div>
-    <p>Most people who see your webinar ad aren't going to register the first time they see it. That's fine — that's how people make decisions about anything that involves budget and a time commitment. They need to see you a few times, at the right moments, before they act. Retargeting is how you make sure those moments happen.</p>
+    <div class="section-header"><span class="section-num">08</span><h2>Retargeting: They Left. That Doesn't Mean It's Over.</h2></div>
+    <p>Most people who see your webinar ad aren't going to register the first time they see it. That's fine; that's how people make decisions about anything that involves budget and a time commitment. They need to see you a few times, at the right moments, before they act. Retargeting is how you make sure those moments happen.</p>
     <div class="two-col">
       <div>
         <p><strong>Who to bring back:</strong></p>
@@ -3593,20 +4055,20 @@ CS_HTML[1] = `<!DOCTYPE html>
       <div>
         <p><strong>Where to reach them:</strong></p>
         <ul class="clean">
-          <li>LinkedIn — best targeting for B2B, worth the higher CPM</li>
-          <li>Facebook and Instagram — more volume, works well for SMB audiences</li>
-          <li>Email — best ROI for contacts you already have</li>
+          <li>LinkedIn: best targeting for B2B, worth the higher CPM</li>
+          <li>Facebook and Instagram: more volume, works well for SMB audiences</li>
+          <li>Email: best ROI for contacts you already have</li>
         </ul>
       </div>
     </div>
-    <p>Each audience needs a different angle. The person who registered but didn't attend needs a replay offer. The person who attended but didn't book needs a case study or a specific outcome — something that answers "but would this actually work for me?" Don't run the same ad to everyone. That's not retargeting, that's just noise.</p>
+    <p>Each audience needs a different angle. The person who registered but didn't attend needs a replay offer. The person who attended but didn't book needs a case study or a specific outcome, something that answers "but would this actually work for me?" Don't run the same ad to everyone. That's not retargeting, that's just noise.</p>
   </div>
   <hr class="rule">
 
   <!-- 09 -->
   <div class="section">
     <div class="section-header"><span class="section-num">09</span><h2>What Could This Realistically Look Like in Numbers?</h2></div>
-    <p>Everything below is a projection based on industry benchmarks for B2B webinar funnels targeting SMB and mid-market. Your numbers will vary depending on how specific your topic is, how well your audience is targeted, and how deliberate your follow-up sequence is. These assume a funnel that's been thought through properly — not perfected, but intentional.</p>
+    <p>Everything below is a projection based on industry benchmarks for B2B webinar funnels targeting SMB and mid-market. Your numbers will vary depending on how specific your topic is, how well your audience is targeted, and how deliberate your follow-up sequence is. These assume a funnel that's been thought through properly, not perfected, but intentional.</p>
 
     <table>
       <thead><tr><th>Funnel Stage</th><th>Projected Users</th><th>Drop-off</th></tr></thead>
@@ -3628,21 +4090,21 @@ CS_HTML[1] = `<!DOCTYPE html>
 
     <div class="note">
       <div class="note-label">What These Numbers Assume</div>
-      <p>The $3,000 average deal is based on a mid-range B2B service retainer. The 50% attendance rate requires a proper reminder sequence — minimum three emails: the day before, the morning of, and one hour before. The 20% call booking rate post-webinar assumes a clear, direct CTA at the end of the session — not "reach out if you're interested," but a specific next step with a specific reason to take it. <strong>These numbers are realistic for a mature version of this funnel — expect your first run to land lower, and improve from there.</strong></p>
+      <p>The $3,000 average deal is based on a mid-range B2B service retainer. The 50% attendance rate requires a proper reminder sequence: minimum three emails, the day before, the morning of, and one hour before. The 20% call booking rate post-webinar assumes a clear, direct CTA at the end of the session, not "reach out if you're interested," but a specific next step with a specific reason to take it. <strong>These numbers are realistic for a mature version of this funnel; expect your first run to land lower, and improve from there.</strong></p>
     </div>
   </div>
   <hr class="rule">
 
   <!-- 10 -->
   <div class="section">
-    <div class="section-header"><span class="section-num">10</span><h2>What to Test — And Why the Order Matters</h2></div>
+    <div class="section-header"><span class="section-num">10</span><h2>What to Test, and Why the Order Matters</h2></div>
     <p>There are a lot of variables in a webinar funnel. Testing them simultaneously means you'll never know which change actually moved the needle. Work top-down. Don't optimize the follow-up email sequence while registration rates are still low.</p>
     <ul class="clean">
-      <li><strong>Webinar topic first</strong> — "How to grow your B2B business" will not fill your registration page. Something like "Why your outbound emails are getting ignored — and what to do about it" will. Specificity is what makes someone block their calendar.</li>
-      <li><strong>Registration page headline second</strong> — if you're below a 20% conversion rate on the page, the promise isn't landing. Test the headline before anything else on that page.</li>
-      <li><strong>Reminder sequence third</strong> — most no-shows are recoverable. Test the tone and timing of your morning-of email specifically. That one does more work than people realize.</li>
-      <li><strong>End-of-webinar CTA fourth</strong> — this is the most valuable 90 seconds of the entire funnel. Test a soft close versus a direct one. Watch your booking rate respond.</li>
-      <li><strong>Follow-up email three fifth</strong> — in most sequences, the third email outperforms the first two combined. Test the offer inside it before you touch anything else in the sequence.</li>
+      <li><strong>Webinar topic first.</strong> "How to grow your B2B business" will not fill your registration page. Something like "Why your outbound emails are getting ignored, and what to do about it" will. Specificity is what makes someone block their calendar.</li>
+      <li><strong>Registration page headline second.</strong> If you're below a 20% conversion rate on the page, the promise isn't landing. Test the headline before anything else on that page.</li>
+      <li><strong>Reminder sequence third.</strong> Most no-shows are recoverable. Test the tone and timing of your morning-of email specifically. That one does more work than people realize.</li>
+      <li><strong>End-of-webinar CTA fourth.</strong> This is the most valuable 90 seconds of the entire funnel. Test a soft close versus a direct one. Watch your booking rate respond.</li>
+      <li><strong>Follow-up email three fifth.</strong> In most sequences, the third email outperforms the first two combined. Test the offer inside it before you touch anything else in the sequence.</li>
     </ul>
   </div>
   <hr class="rule">
@@ -3653,9 +4115,9 @@ CS_HTML[1] = `<!DOCTYPE html>
     <table>
       <thead><tr><th>Function</th><th>Tool</th><th>Why This One</th></tr></thead>
       <tbody>
-        <tr><td>Landing page</td><td>Webflow</td><td>Fast, clean, no design ceilings — this page needs to convert, not just look okay</td></tr>
+        <tr><td>Landing page</td><td>Webflow</td><td>Fast, clean, no design ceilings; this page needs to convert, not just look okay</td></tr>
         <tr><td>Webinar platform</td><td>Demio / Zoom</td><td>Demio for cleaner branding and built-in CTAs; Zoom if budget is tight</td></tr>
-        <tr><td>Email + CRM</td><td>HubSpot</td><td>Handles segmentation, scoring and pipeline together — saves you from stitching tools</td></tr>
+        <tr><td>Email + CRM</td><td>HubSpot</td><td>Handles segmentation, scoring and pipeline together, saving you from stitching tools</td></tr>
         <tr><td>Paid ads</td><td>LinkedIn primary</td><td>More expensive per click but B2B targeting is genuinely better here than anywhere else</td></tr>
         <tr><td>Automation</td><td>Zapier</td><td>Registration → CRM → email sequence, no engineering required</td></tr>
         <tr><td>Analytics</td><td>GA4</td><td>Track exactly which stage your funnel is leaking from</td></tr>
@@ -3685,11 +4147,11 @@ CS_HTML[1] = `<!DOCTYPE html>
       <h3>What this case study is really telling you</h3>
       <p class="closer-sub">If I joined your team, this is how I'd approach building your pipeline.</p>
       <ul>
-        <li>I build systems with compounding returns — not campaigns that run once and go quiet</li>
+        <li>I build systems with compounding returns, not campaigns that run once and go quiet</li>
         <li>I start by thinking through what the customer needs to believe before they're ready to buy, and then build the funnel to create those conditions</li>
-        <li>Everything connects back to real business numbers — CAC, LTV, ROI — not just traffic and registrations</li>
+        <li>Everything connects back to real business numbers: CAC, LTV, ROI, not just traffic and registrations</li>
         <li>I treat the first version of any funnel as a hypothesis that needs to be tested and improved, not a finished product</li>
-        <li>I think about marketing and sales as one team with one goal — a pipeline that converts, not two separate functions pointing fingers at each other</li>
+        <li>I think about marketing and sales as one team with one goal: a pipeline that converts, not two separate functions pointing fingers at each other</li>
       </ul>
     </div>
   </div>
@@ -3706,7 +4168,7 @@ CS_HTML[2] = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Case Study — Multi-Channel Campaigns at UPBEAT Growth</title>
+<title>Case Study: Multi-Channel Campaigns at UPBEAT Growth</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -3818,7 +4280,7 @@ CS_HTML[2] = `<!DOCTYPE html>
     <div class="cover-left">
       <div class="cover-label">Paid Internship · UPBEAT Growth · New York</div>
       <h1>Three Industries at Once. One Discipline Running Through All of Them.</h1>
-      <p class="cover-sub">Hospitality, retail, and legal — each demanding a completely different campaign approach — all running simultaneously at a growth agency in New York City.</p>
+      <p class="cover-sub">Hospitality, retail, and legal, each demanding a completely different campaign approach, all running simultaneously at a growth agency in New York City.</p>
       <div class="cover-meta-row">
         <div><div class="meta-label">Agency</div><div class="meta-value">UPBEAT Growth</div></div>
         <div><div class="meta-label">Role</div><div class="meta-value">Marketing Intern</div></div>
@@ -3852,8 +4314,8 @@ CS_HTML[2] = `<!DOCTYPE html>
       <span class="section-num">01</span>
       <h2>The Reality of Multi-Client Agency Work</h2>
     </div>
-    <p>At a growth agency, you can't bring the same playbook to every client. <strong>Each vertical has a completely different conversion event, a different audience psychology, and a different definition of success.</strong> The hospitality client wants bookings. The retail client wants transactions. The legal client wants qualified consultation requests. Three targets, three audiences, three creative approaches — all running at the same time.</p>
-    <p>The job isn't just executing campaigns. It's getting inside each vertical fast enough to build the right strategy — understanding what the customer cares about, where their hesitation sits, and what kind of marketing actually earns their attention. That process has to happen in parallel, not sequentially, and the rigour has to hold across all of them.</p>
+    <p>At a growth agency, you can't bring the same playbook to every client. <strong>Each vertical has a completely different conversion event, a different audience psychology, and a different definition of success.</strong> The hospitality client wants bookings. The retail client wants transactions. The legal client wants qualified consultation requests. Three targets, three audiences, three creative approaches, all running at the same time.</p>
+    <p>The job isn't just executing campaigns. It's getting inside each vertical fast enough to build the right strategy: understanding what the customer cares about, where their hesitation sits, and what kind of marketing actually earns their attention. That process has to happen in parallel, not sequentially, and the rigour has to hold across all of them.</p>
     <div class="callout">
       <p><strong>The real constraint:</strong> No vertical gets a lighter version of the work. If the hospitality campaign underperforms, the client doesn't care that you were also running two others. Each account demands full analytical attention, or the whole model breaks down.</p>
     </div>
@@ -3866,7 +4328,7 @@ CS_HTML[2] = `<!DOCTYPE html>
       <span class="section-num">02</span>
       <h2>The Vertical Breakdown</h2>
     </div>
-    <p>Each industry required a different strategy built from first principles — not a template with minor tweaks applied on top.</p>
+    <p>Each industry required a different strategy built from first principles, not a template with minor tweaks applied on top.</p>
 
     <div class="vertical-grid">
       <div class="vertical-card">
@@ -3874,7 +4336,7 @@ CS_HTML[2] = `<!DOCTYPE html>
           <span class="vertical-tag">Hospitality</span>
           <span class="vertical-title">Booking-Driven Campaigns</span>
         </div>
-        <p class="vertical-desc">Hospitality customers make time-sensitive decisions. The campaign strategy leaned into urgency signals — availability, limited-time offers — and social proof in the form of reviews and occupancy indicators. The goal was to catch people already in search mode and give them a reason to act now rather than keep browsing. Consideration phases in hospitality are short; the creative had to work fast.</p>
+        <p class="vertical-desc">Hospitality customers make time-sensitive decisions. The campaign strategy leaned into urgency signals (availability, limited-time offers) and social proof in the form of reviews and occupancy indicators. The goal was to catch people already in search mode and give them a reason to act now rather than keep browsing. Consideration phases in hospitality are short; the creative had to work fast.</p>
         <p class="vertical-method">Urgency framing · social proof signals · search intent alignment</p>
       </div>
       <div class="vertical-card vertical-card--retail">
@@ -3882,7 +4344,7 @@ CS_HTML[2] = `<!DOCTYPE html>
           <span class="vertical-tag">Retail</span>
           <span class="vertical-title">Product-Led Creative at Inventory Scale</span>
         </div>
-        <p class="vertical-desc">Retail campaigns ran on audience segmentation timed to inventory cycles — pushing the right products to the right segments based on behavioural signals and purchase patterns. Creative was product-forward with direct CTAs, not lifestyle-led. Retargeting sequences recaptured high-intent visitors who hadn't converted on the first touch. The work was about precision in targeting as much as quality in creative.</p>
+        <p class="vertical-desc">Retail campaigns ran on audience segmentation timed to inventory cycles, pushing the right products to the right segments based on behavioural signals and purchase patterns. Creative was product-forward with direct CTAs, not lifestyle-led. Retargeting sequences recaptured high-intent visitors who hadn't converted on the first touch. The work was about precision in targeting as much as quality in creative.</p>
         <p class="vertical-method">Audience segmentation · inventory timing · retargeting sequences</p>
       </div>
       <div class="vertical-card vertical-card--legal">
@@ -3890,7 +4352,7 @@ CS_HTML[2] = `<!DOCTYPE html>
           <span class="vertical-tag">Legal</span>
           <span class="vertical-title">Authority First. Trust Before Volume.</span>
         </div>
-        <p class="vertical-desc">Legal clients don't convert on impulse. The audience researches carefully and needs to believe in the firm's authority before they'll make contact. The approach was content-led — building credibility signals, showcasing expertise, and positioning the firm as the obvious expert in their area. Volume was secondary to quality: one genuinely interested consultation request is worth far more than ten curiosity clicks that go nowhere.</p>
+        <p class="vertical-desc">Legal clients don't convert on impulse. The audience researches carefully and needs to believe in the firm's authority before they'll make contact. The approach was content-led, building credibility signals, showcasing expertise, and positioning the firm as the obvious expert in their area. Volume was secondary to quality: one genuinely interested consultation request is worth far more than ten curiosity clicks that go nowhere.</p>
         <p class="vertical-method">Credentialing content · authority positioning · quality over volume</p>
       </div>
     </div>
@@ -3904,7 +4366,7 @@ CS_HTML[2] = `<!DOCTYPE html>
       <h2>The Thread That Runs Through All Three</h2>
     </div>
     <p>The industries are different. The audiences are different. The creative is different. But the analytical framework doesn't change: <strong>define the conversion event precisely, build the funnel to create the conditions for it, and measure only what connects back to that outcome.</strong></p>
-    <p>Vanity metrics — reach, impressions, follower counts — are not the work. The work is knowing what action you need the audience to take, what they need to believe before they'll take it, and what campaign mechanics build those beliefs. That logic holds whether you're selling hotel rooms, retail products, or legal consultations.</p>
+    <p>Vanity metrics (reach, impressions, follower counts) are not the work. The work is knowing what action you need the audience to take, what they need to believe before they'll take it, and what campaign mechanics build those beliefs. That logic holds whether you're selling hotel rooms, retail products, or legal consultations.</p>
 
     <div class="pipeline">
       <div class="pipe-step">Define<div class="pipe-sub">conversion event</div></div>
@@ -3919,21 +4381,21 @@ CS_HTML[2] = `<!DOCTYPE html>
 
   <hr class="rule">
 
-  <div class="section">
+  <div class="section" id="hackathon">
     <div class="section-header">
       <span class="section-num">04</span>
-      <h2>TOFU Hackathon — SURU Labs</h2>
+      <h2>TOFU Hackathon · SURU Labs</h2>
     </div>
-    <p>Alongside the internship, my team entered the TOFU Marketing Hackathon run by SURU Labs — a competition where teams build a complete marketing channel strategy for a real brief, under time pressure, judged by industry practitioners.</p>
-    <p>The brief was for <strong>THORN</strong>, a nonprofit that builds technology to detect and combat child sexual exploitation online. High-stakes, purpose-driven, and with a completely different audience model than the commercial clients at UPBEAT. The challenge wasn't optimising clicks or conversion rates — it was about awareness, credibility, and mobilising the right people to pay attention and take action.</p>
+    <p>Alongside the internship, my team entered the TOFU Marketing Hackathon run by SURU Labs, a competition where teams build a complete marketing channel strategy for a real brief, under time pressure, judged by industry practitioners.</p>
+    <p>The brief was for <strong>THORN</strong>, a nonprofit that builds technology to detect and combat child sexual exploitation online. High-stakes, purpose-driven, and with a completely different audience model than the commercial clients at UPBEAT. The challenge wasn't optimising clicks or conversion rates; it was about awareness, credibility, and mobilising the right people to pay attention and take action.</p>
 
     <div class="hackathon-card">
       <div class="hackathon-rank">#1</div>
       <div class="hackathon-name">TOFU Marketing Hackathon · SURU Labs</div>
-      <p class="hackathon-desc">My team built and presented a complete channel strategy for THORN — audience mapping, channel selection, content approach, and a measurement framework — for a brief we had never seen before, under competition pressure. We won first place.</p>
+      <p class="hackathon-desc">My team built and presented a complete channel strategy for THORN: audience mapping, channel selection, content approach, and a measurement framework, for a brief we had never seen before, under competition pressure. We won first place.</p>
     </div>
 
-    <p>What the hackathon tested — and what the internship had been building — was the ability to think strategically from scratch. Not reach for the obvious channel. Not apply a template. Start from the audience, understand what they need to believe, and build the strategy that earns their attention.</p>
+    <p>What the hackathon tested, and what the internship had been building, was the ability to think strategically from scratch. Not reach for the obvious channel. Not apply a template. Start from the audience, understand what they need to believe, and build the strategy that earns their attention.</p>
   </div>
 
   <hr class="rule">
@@ -3943,14 +4405,14 @@ CS_HTML[2] = `<!DOCTYPE html>
       <span class="section-num">05</span>
       <h2>What Multi-Vertical Work Actually Builds</h2>
     </div>
-    <p>Working across three industries simultaneously develops strategic instinct faster than working in one industry for three times as long. When you're constantly shifting between a hospitality brief and a legal brief and a retail brief, you can't rely on industry-specific rules. <strong>You have to find the underlying logic — the parts of good marketing strategy that hold regardless of the vertical.</strong></p>
-    <p>That's what the internship at UPBEAT built: the ability to walk into a new brief, ask the right questions, and build something that works — without needing months to "get up to speed" on the industry.</p>
+    <p>Working across three industries simultaneously develops strategic instinct faster than working in one industry for three times as long. When you're constantly shifting between a hospitality brief and a legal brief and a retail brief, you can't rely on industry-specific rules. <strong>You have to find the underlying logic: the parts of good marketing strategy that hold regardless of the vertical.</strong></p>
+    <p>That's what the internship at UPBEAT built: the ability to walk into a new brief, ask the right questions, and build something that works, without needing months to "get up to speed" on the industry.</p>
 
     <ul class="clean">
       <li>Managed three independent campaign tracks simultaneously, each with different KPIs, audiences, and creative requirements</li>
       <li>Built strategy from first principles for each vertical rather than applying a shared playbook</li>
-      <li>Developed fluency across different buyer psychology — from short-consideration (hospitality, retail) to high-consideration (legal)</li>
-      <li>Validated strategic thinking under competition conditions at the TOFU Hackathon — not just in client work</li>
+      <li>Developed fluency across different buyer psychology: from short-consideration (hospitality, retail) to high-consideration (legal)</li>
+      <li>Validated strategic thinking under competition conditions at the TOFU Hackathon, not just in client work</li>
     </ul>
   </div>
 
@@ -3958,7 +4420,7 @@ CS_HTML[2] = `<!DOCTYPE html>
     <h3>If you need someone who can walk into a new brief and build something that works</h3>
     <p class="closer-sub">This is the kind of experience that built that capability.</p>
     <ul>
-      <li>I don't need a deep industry background to contribute — I need a clear brief and the right questions</li>
+      <li>I don't need a deep industry background to contribute; I need a clear brief and the right questions</li>
       <li>I can hold multiple workstreams in parallel without losing rigour on any of them</li>
       <li>I start from the audience and the conversion event, not from the channel or the format</li>
       <li>Strategic thinking under pressure has been tested in a competitive setting, not just claimed</li>
@@ -3978,7 +4440,7 @@ CS_HTML[3] = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Case Study — Marketing Analytics at TCS / Deutsche Bank</title>
+<title>Case Study: Marketing Analytics at TCS / Deutsche Bank</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -4099,7 +4561,7 @@ CS_HTML[3] = `<!DOCTYPE html>
     <div class="cover-left">
       <div class="cover-label">Full-time Employment · TCS / Deutsche Bank · Pune</div>
       <h1>A Global Bank's Trading Platform. Millions of Users. Data That Wasn't Being Used.</h1>
-      <p class="cover-sub">Three years building the analytics infrastructure that connected user behaviour to campaign decisions — inside one of the world's largest financial institutions.</p>
+      <p class="cover-sub">Three years building the analytics infrastructure that connected user behaviour to campaign decisions, inside one of the world's largest financial institutions.</p>
       <div class="cover-meta-row">
         <div><div class="meta-label">Company</div><div class="meta-value">TCS / Deutsche Bank</div></div>
         <div><div class="meta-label">Role</div><div class="meta-value">Marketing Analyst</div></div>
@@ -4133,10 +4595,10 @@ CS_HTML[3] = `<!DOCTYPE html>
       <span class="section-num">01</span>
       <h2>The Problem: Data That Couldn't Answer Anything</h2>
     </div>
-    <p>Deutsche Bank's marketing team had more data than most companies could dream of — campaign logs, platform activity, user behaviour signals across a live trading product used by millions. The problem wasn't data volume. <strong>The problem was that none of it was connected, and none of it could answer the one question that mattered: which changes actually moved users to act?</strong></p>
-    <p>Campaign reports lived separately from user behaviour data. Platform engagement sat in a different system from marketing performance. When a campaign ran and the numbers came back, nobody could reliably trace what worked, what didn't, and why. Decisions were made on instinct and experience — not because the team wasn't analytical, but because the infrastructure to support data-driven decisions simply didn't exist.</p>
+    <p>Deutsche Bank's marketing team had more data than most companies could dream of: campaign logs, platform activity, user behaviour signals across a live trading product used by millions. The problem wasn't data volume. <strong>The problem was that none of it was connected, and none of it could answer the one question that mattered: which changes actually moved users to act?</strong></p>
+    <p>Campaign reports lived separately from user behaviour data. Platform engagement sat in a different system from marketing performance. When a campaign ran and the numbers came back, nobody could reliably trace what worked, what didn't, and why. Decisions were made on instinct and experience, not because the team wasn't analytical, but because the infrastructure to support data-driven decisions simply didn't exist.</p>
     <div class="callout">
-      <p><strong>The gap:</strong> Not a data shortage — a data utility problem. The question wasn't "how do we collect more?" It was "how do we build the layer that makes what we already have usable?"</p>
+      <p><strong>The gap:</strong> Not a data shortage; a data utility problem. The question wasn't "how do we collect more?" It was "how do we build the layer that makes what we already have usable?"</p>
     </div>
   </div>
 
@@ -4147,27 +4609,27 @@ CS_HTML[3] = `<!DOCTYPE html>
       <span class="section-num">02</span>
       <h2>Building the Analytics Infrastructure</h2>
     </div>
-    <p>The starting point was clarity on what questions the marketing team actually needed to answer — and then reverse-engineering the data architecture to support those questions. <strong>The goal was a single source of truth that connected campaign performance to user activity to platform engagement, all in one place.</strong></p>
-    <p>Power BI became that layer. Dashboards were built to pull from multiple sources, normalise the data, and surface the metrics that mattered to the decisions being made — not just whatever the source systems defaulted to showing.</p>
+    <p>The starting point was clarity on what questions the marketing team actually needed to answer, then reverse-engineering the data architecture to support those questions. <strong>The goal was a single source of truth that connected campaign performance to user activity to platform engagement, all in one place.</strong></p>
+    <p>Power BI became that layer. Dashboards were built to pull from multiple sources, normalise the data, and surface the metrics that mattered to the decisions being made, not just whatever the source systems defaulted to showing.</p>
 
     <div class="compare-grid">
       <div class="compare-cell compare-cell--before">
         <div class="compare-label">Before</div>
         <div class="compare-item">Campaign data in one report, user data somewhere else, platform engagement in a third system</div>
-        <div class="compare-item">No cross-referencing possible — campaign performance couldn't be linked to user behaviour</div>
+        <div class="compare-item">No cross-referencing possible: campaign performance couldn't be linked to user behaviour</div>
         <div class="compare-item">Decisions made on instinct; nobody could answer what was driving changes in user action</div>
         <div class="compare-item">Analysis produced slides. Slides didn't move decisions.</div>
       </div>
       <div class="compare-cell compare-cell--after">
         <div class="compare-label">After</div>
         <div class="compare-item">One dashboard connecting campaign performance, user activity, and platform engagement</div>
-        <div class="compare-item">Filter by segment, campaign, time period — cross-reference any combination of signals</div>
+        <div class="compare-item">Filter by segment, campaign, time period, cross-referencing any combination of signals</div>
         <div class="compare-item">The marketing team could now ask and answer specific questions about what drove user action</div>
         <div class="compare-item">Analysis produced decisions. The infrastructure made that possible.</div>
       </div>
     </div>
 
-    <p>Building this wasn't just a BI exercise. It required understanding the underlying data pipelines, writing queries to join and transform data from different systems, and working directly with the engineering and product teams who owned those systems. That cross-functional fluency — between the marketing brief and the technical reality — is what made it possible to build something that actually worked rather than a dashboard nobody trusted.</p>
+    <p>Building this wasn't just a BI exercise. It required understanding the underlying data pipelines, writing queries to join and transform data from different systems, and working directly with the engineering and product teams who owned those systems. That cross-functional fluency between the marketing brief and the technical reality is what made it possible to build something that actually worked rather than a dashboard nobody trusted.</p>
   </div>
 
   <hr class="rule">
@@ -4177,7 +4639,7 @@ CS_HTML[3] = `<!DOCTYPE html>
       <span class="section-num">03</span>
       <h2>The A/B Testing Program</h2>
     </div>
-    <p>Once there was a reliable measurement foundation, the next step was to use it — running controlled experiments to isolate which changes on the trading platform actually drove user action, and which were noise.</p>
+    <p>Once there was a reliable measurement foundation, the next step was to use it: running controlled experiments to isolate which changes on the trading platform actually drove user action, and which were noise.</p>
     <p><strong>Running A/B tests on a live financial platform used by millions of users demands a level of rigour that most marketing experimentation doesn't.</strong> You can't run an underpowered test and shrug. You can't make design decisions that affect real users' financial tools on the basis of directional data. The statistical bar is higher, the test design has to be tighter, and the measurement has to be precise.</p>
 
     <div class="pipeline">
@@ -4188,7 +4650,7 @@ CS_HTML[3] = `<!DOCTYPE html>
       <div class="pipe-step win">Decide<div class="pipe-sub">ship or kill</div></div>
     </div>
 
-    <p>Tests ran on copy, UI prompts, and CTA placements across the platform — isolating the effect of each change on the specific user action it was designed to drive. The work produced a consistent record of what moved the needle and what didn't, building a body of knowledge that informed future decisions beyond just the individual test results.</p>
+    <p>Tests ran on copy, UI prompts, and CTA placements across the platform, isolating the effect of each change on the specific user action it was designed to drive. The work produced a consistent record of what moved the needle and what didn't, building a body of knowledge that informed future decisions beyond just the individual test results.</p>
 
     <div class="pull">A test that doesn't reach a decision isn't a failed test. It's missing the infrastructure to support one. The dashboard and the testing program had to work together.</div>
   </div>
@@ -4201,27 +4663,27 @@ CS_HTML[3] = `<!DOCTYPE html>
       <h2>Where the CS Background Made the Difference</h2>
     </div>
     <p>Most marketing analysts in this kind of role are dependent on engineers to pull data, build joins, and surface anything beyond the standard reports. <strong>The computer science background changed that dynamic entirely.</strong></p>
-    <p>Being able to write the queries, understand the data model, and read the pipeline documentation meant I could work directly with the engineering and product teams — without needing a translator on either side. That gave the analysis a credibility and a speed that it wouldn't otherwise have had.</p>
+    <p>Being able to write the queries, understand the data model, and read the pipeline documentation meant I could work directly with the engineering and product teams, without needing a translator on either side. That gave the analysis a credibility and a speed that it wouldn't otherwise have had.</p>
 
     <div class="skill-grid">
       <div class="skill-card">
         <div class="skill-card-label">Technical</div>
         <div class="skill-card-title">Data Querying</div>
-        <div class="skill-card-desc">Writing queries to join, transform, and surface data from multiple backend systems — without depending on engineering to pull every dataset.</div>
+        <div class="skill-card-desc">Writing queries to join, transform, and surface data from multiple backend systems, without depending on engineering to pull every dataset.</div>
       </div>
       <div class="skill-card">
         <div class="skill-card-label">Analytical</div>
         <div class="skill-card-title">Experiment Design</div>
-        <div class="skill-card-desc">Designing A/B tests with proper hypothesis framing, sample sizing, and metric selection — not just setting up a split and waiting for significance.</div>
+        <div class="skill-card-desc">Designing A/B tests with proper hypothesis framing, sample sizing, and metric selection, not just setting up a split and waiting for significance.</div>
       </div>
       <div class="skill-card">
         <div class="skill-card-label">Operational</div>
         <div class="skill-card-title">Cross-Functional Credibility</div>
-        <div class="skill-card-desc">Working at the intersection of marketing, product, and engineering — translating between business questions and technical constraints in both directions.</div>
+        <div class="skill-card-desc">Working at the intersection of marketing, product, and engineering, translating between business questions and technical constraints in both directions.</div>
       </div>
     </div>
 
-    <p>That combination — marketing strategy, analytical rigour, and technical fluency — is what turned the work from "producing analysis" into "influencing decisions." The dashboards were used. The test results were acted on. That's the outcome that matters.</p>
+    <p>That combination of marketing strategy, analytical rigour, and technical fluency is what turned the work from "producing analysis" into "influencing decisions." The dashboards were used. The test results were acted on. That's the outcome that matters.</p>
   </div>
 
   <hr class="rule">
@@ -4232,12 +4694,12 @@ CS_HTML[3] = `<!DOCTYPE html>
       <h2>What Three Years Inside a Global Institution Builds</h2>
     </div>
     <p>A short engagement gives you a snapshot of how an organisation works. Three years of embedded work gives you something different: an understanding of how decisions actually get made, what makes analysis credible inside a large institution, and how to build something that survives beyond the person who built it.</p>
-    <p>At Deutsche Bank, the dashboards had to be maintainable. The testing methodology had to be transferable. The work had to produce institutional knowledge — not just answers to this quarter's questions. <strong>That discipline — building for durability, not just delivery — is something you only learn by staying long enough to see the consequences of how you built things.</strong></p>
+    <p>At Deutsche Bank, the dashboards had to be maintainable. The testing methodology had to be transferable. The work had to produce institutional knowledge, not just answers to this quarter's questions. <strong>That discipline of building for durability, not just delivery, is something you only learn by staying long enough to see the consequences of how you built things.</strong></p>
 
     <ul class="clean">
       <li>Built and maintained Power BI dashboards used by the marketing team as their primary analytical tool across a 3-year tenure</li>
       <li>Designed and ran A/B experiments on a live trading platform, producing a documented record of what drove measurable user action</li>
-      <li>Worked directly with engineering and product teams — the CS background enabling genuine cross-functional collaboration, not just handoff requests</li>
+      <li>Worked directly with engineering and product teams, the CS background enabling genuine cross-functional collaboration, not just handoff requests</li>
       <li>Built analysis infrastructure designed to be maintained and extended, not just consumed once and discarded</li>
     </ul>
   </div>
@@ -4246,10 +4708,10 @@ CS_HTML[3] = `<!DOCTYPE html>
     <h3>If you need someone who understands data well enough to build the infrastructure, and clearly enough to move decisions</h3>
     <p class="closer-sub">This is where that capability was built and tested over three years.</p>
     <ul>
-      <li>I can work at the intersection of marketing and engineering — not just translate between them, but contribute on both sides</li>
+      <li>I can work at the intersection of marketing and engineering: not just translate between them, but contribute on both sides</li>
       <li>I design experiments with the rigour the decision deserves, not just the setup the tool makes easy</li>
-      <li>I build analysis infrastructure that the team actually uses — dashboards and reports that answer the questions people are really asking</li>
-      <li>Three years inside a global financial institution means I understand how large organisations make decisions — and how to get analysis into that process</li>
+      <li>I build analysis infrastructure that the team actually uses: dashboards and reports that answer the questions people are really asking</li>
+      <li>Three years inside a global financial institution means I understand how large organisations make decisions, and how to get analysis into that process</li>
       <li>I build for durability. The work I leave behind should still be working when I'm not in the room.</li>
     </ul>
   </div>
@@ -4267,7 +4729,7 @@ CS_HTML[3] = `<!DOCTYPE html>
   <source src="lofi-music.mp3" type="audio/mpeg">
 </audio>
 
-<div class="mp-toast" id="mpToast">put something on — this is the part where you get to know me</div>
+<div class="mp-toast" id="mpToast">put something on. this is the part where you get to know me</div>
 
 <div class="music-player mp-hidden" id="musicPlayer" aria-label="Ambient music player">
   <div class="mp-steam" aria-hidden="true">
@@ -4317,20 +4779,33 @@ CS_HTML[3] = `<!DOCTYPE html>
   /* Steam wisps — visible only when playing */
   .mp-steam {
     display: flex; gap: 6px; align-items: flex-end; height: 22px;
-    opacity: 0; transition: opacity 0.6s;
+    opacity: 0; transition: opacity 0.6s, height 0.4s cubic-bezier(0.16,1,0.3,1);
   }
   .music-player.playing .mp-steam { opacity: 1; }
   .mp-steam span {
     display: block; width: 3px; border-radius: 3px;
     background: linear-gradient(to top, rgba(200,140,70,0.65), rgba(200,140,70,0));
     transform-origin: bottom center;
+    transition: height 0.4s cubic-bezier(0.16,1,0.3,1);
   }
   .mp-steam span:nth-child(1) { height: 10px; animation: mp-steam 2.4s ease-in-out infinite; }
   .mp-steam span:nth-child(2) { height: 15px; animation: mp-steam 2.4s ease-in-out 0.45s infinite; }
   .mp-steam span:nth-child(3) { height: 10px; animation: mp-steam 2.4s ease-in-out 0.9s infinite; }
+  /* 4× burst — triggered for 2s on every play/pause toggle */
+  .mp-steam.press-burst               { height: 88px; }
+  .mp-steam.press-burst span:nth-child(1) { height: 40px; }
+  .mp-steam.press-burst span:nth-child(2) { height: 60px; }
+  .mp-steam.press-burst span:nth-child(3) { height: 40px; }
   @keyframes mp-steam {
     0%,100% { transform: scaleY(1) translateY(0); opacity: 0.65; }
     50%      { transform: scaleY(1.35) translateY(-4px) rotate(3deg); opacity: 0.28; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mp-steam, .mp-steam span { transition: none; }
+    .mp-steam.press-burst, .mp-steam.press-burst span:nth-child(1),
+    .mp-steam.press-burst span:nth-child(2), .mp-steam.press-burst span:nth-child(3) {
+      height: revert;
+    }
   }
 
   /* 3D coffee button */
@@ -4441,19 +4916,256 @@ CS_HTML[3] = `<!DOCTYPE html>
     observer.observe(journeyEl);
   }
 
+  let steamBurstTimer = null;
+  function triggerSteamBurst() {
+    const steam = player.querySelector('.mp-steam');
+    if (!steam) return;
+    clearTimeout(steamBurstTimer);
+    steam.classList.add('press-burst');
+    steamBurstTimer = setTimeout(() => steam.classList.remove('press-burst'), 2000);
+  }
+
   btn.addEventListener('click', function () {
     if (audio.paused) {
       audio.play().then(function () {
         player.classList.add('playing');
         iconP.style.display  = 'none';
         iconPa.style.display = '';
+        triggerSteamBurst();
       }).catch(function () {});
     } else {
       audio.pause();
       player.classList.remove('playing');
       iconP.style.display  = '';
       iconPa.style.display = 'none';
+      triggerSteamBurst();
     }
+  });
+})();
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+(function () {
+  const card       = document.getElementById('hackathonCard');
+  const cupWrap    = document.getElementById('hackCupWrap');
+  const cupCanvas  = document.getElementById('hackCupCanvas');
+  const confCanvas = document.getElementById('hackConfetti');
+  if (!card || !cupCanvas || !confCanvas) return;
+
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── 1. ISOLATED THREE.JS SCENE ── */
+  const hScene  = new THREE.Scene();
+  const hCamera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+  hCamera.position.set(2.8, 2.2, 3.8);
+  hCamera.lookAt(0, 0.1, 0);
+
+  const hRenderer = new THREE.WebGLRenderer({
+    canvas: cupCanvas,
+    alpha: true,
+    antialias: true,
+    premultipliedAlpha: false
+  });
+  hRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  hRenderer.outputColorSpace    = THREE.SRGBColorSpace;
+  hRenderer.toneMapping         = THREE.ACESFilmicToneMapping;
+  hRenderer.toneMappingExposure = 1.05;
+  hRenderer.setClearColor(0x000000, 0);
+
+  const hPmrem = new THREE.PMREMGenerator(hRenderer);
+  hScene.environment = hPmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+  hScene.add(new THREE.AmbientLight(0xfff8e8, 0.6));
+  const hKey = new THREE.DirectionalLight(0xffd98a, 1.45);
+  hKey.position.set(3.5, 5.5, 3.8);
+  hScene.add(hKey);
+  const hRim = new THREE.DirectionalLight(0xd4eaff, 0.55);
+  hRim.position.set(-3.5, 2.5, -2.0);
+  hScene.add(hRim);
+  const hFill = new THREE.PointLight(0xffb347, 0.35, 12);
+  hFill.position.set(0, -2.0, 1.5);
+  hScene.add(hFill);
+
+  const hGroup = new THREE.Group();
+  hScene.add(hGroup);
+
+  /* OrbitControls attached to the cup canvas — identical setup to the coffee cup */
+  const hControls = new OrbitControls(hCamera, cupCanvas);
+  hControls.enableDamping    = true;
+  hControls.dampingFactor    = 0.06;
+  hControls.enablePan        = false;
+  hControls.enableZoom       = false;
+  hControls.autoRotate       = true;
+  hControls.autoRotateSpeed  = 0.45;
+  hControls.minPolarAngle    = Math.PI / 4.2;
+  hControls.maxPolarAngle    = Math.PI / 2.35;
+  hControls.target.set(0, 0.04, 0);
+
+  function resizeHack() {
+    const w = Math.max(1, cupWrap.clientWidth);
+    const h = Math.max(1, cupWrap.clientHeight);
+    hRenderer.setSize(w, h, false);
+    hCamera.aspect = w / h;
+    hCamera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', resizeHack, { passive: true });
+  resizeHack();
+
+  const hClock = new THREE.Clock();
+  let hLoaded  = false;
+
+  function renderHack() {
+    requestAnimationFrame(renderHack);
+    const hDelta = hClock.getDelta();
+    if (!hLoaded) return;
+    const t = hClock.elapsedTime;
+    hGroup.position.y = Math.sin(t * 0.5)  * 0.016;
+    hGroup.rotation.x = -0.018 + Math.sin(t * 0.32) * 0.01;
+    hControls.update(hDelta);
+    hRenderer.render(hScene, hCamera);
+  }
+  renderHack();
+
+  new GLTFLoader().load(
+    './winners_cup.glb',
+    (gltf) => {
+      const model  = gltf.scene;
+      const box    = new THREE.Box3().setFromObject(model);
+      const size   = new THREE.Vector3();
+      const center = new THREE.Vector3();
+      box.getSize(size);
+      box.getCenter(center);
+
+      model.position.sub(center);
+      const maxDim = Math.max(size.x, size.y, size.z) || 1;
+      model.scale.setScalar(2.2 / maxDim);
+
+      model.traverse((child) => {
+        if (child.isMesh && child.material) {
+          child.castShadow    = true;
+          child.receiveShadow = true;
+          if (child.material.isMeshStandardMaterial) {
+            child.material.metalness       = Math.max(child.material.metalness, 0.72);
+            child.material.roughness       = Math.min(child.material.roughness, 0.28);
+            child.material.envMapIntensity = 1.6;
+          }
+          child.material.needsUpdate = true;
+        }
+      });
+
+      model.rotation.set(0.08, -0.5, 0);
+      model.position.y = -0.18;
+      hGroup.add(model);
+      hLoaded = true;
+    },
+    undefined,
+    (err) => console.error('Could not load winners_cup.glb:', err)
+  );
+
+  /* ── 2. CONFETTI — slower fade, longer hang time ── */
+  function fireConfetti() {
+    if (prefersReduced) return;
+    const ctx = confCanvas.getContext('2d');
+    confCanvas.width  = card.offsetWidth;
+    confCanvas.height = card.offsetHeight;
+    const colors = ['#b8923a','#c0533a','#f4efe8','#d4a84b','#d97a5c','#fff0c8'];
+    const particles = Array.from({ length: 42 }, () => ({
+      x:        Math.random() * confCanvas.width,
+      y:        confCanvas.height * (0.3 + Math.random() * 0.4),
+      vx:       (Math.random() - 0.5) * 4.5,
+      vy:       -(Math.random() * 4.5 + 2),
+      w:        Math.random() * 8 + 3,
+      h:        Math.random() * 4 + 2,
+      color:    colors[Math.floor(Math.random() * colors.length)],
+      alpha:    1,
+      rotation: Math.random() * 360,
+      rotSpeed: (Math.random() - 0.5) * 6
+    }));
+    function drawConf() {
+      ctx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+      let alive = false;
+      particles.forEach(p => {
+        p.x  += p.vx;
+        p.y  += p.vy;
+        p.vy += 0.12;   /* lighter gravity — hang longer */
+        p.vx *= 0.992;  /* gentle drag */
+        p.alpha    -= 0.005;  /* slow fade: ~200 frames = ~3.3s at 60fps */
+        p.rotation += p.rotSpeed;
+        if (p.alpha <= 0) return;
+        alive = true;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.alpha);
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation * Math.PI / 180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      });
+      if (alive) requestAnimationFrame(drawConf);
+      else ctx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+    }
+    drawConf();
+  }
+
+  /* ── 3. ENTRANCE SEQUENCE ── */
+  let entranceFired = false;
+
+  function runEntrance() {
+    if (prefersReduced) {
+      card.classList.add('hc-visible', 'hc-cup-in', 'hc-glow');
+      return;
+    }
+    if (entranceFired) return;
+    entranceFired = true;
+    requestAnimationFrame(() => card.classList.add('hc-visible'));
+    setTimeout(() => card.classList.add('hc-cup-in'), 220);
+    setTimeout(() => card.classList.add('hc-glow'),   640);
+    setTimeout(() => fireConfetti(),                  860);
+  }
+
+  const hackObserver = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) {
+      hackObserver.disconnect();
+      runEntrance();
+    }
+  }, { threshold: 0.45 });
+  hackObserver.observe(card);
+
+  /* ── 4. CLICK / KEYBOARD
+     Drag on the cup canvas must not fire the card's click-to-open.
+     Track pointer movement between pointerdown and pointerup on the canvas. ── */
+  let cupDragged = false;
+  cupCanvas.addEventListener('pointerdown', () => { cupDragged = false; });
+  cupCanvas.addEventListener('pointermove', (e) => { if (e.buttons) cupDragged = true; });
+  cupCanvas.addEventListener('click', (e) => { if (cupDragged) { e.stopPropagation(); cupDragged = false; } });
+
+  function openHackathon() {
+    if (typeof openViewer === 'function') {
+      openViewer(2);
+      const frame = document.getElementById('cs-frame');
+      if (frame) {
+        function onFrameLoad() {
+          frame.removeEventListener('load', onFrameLoad);
+          try {
+            const target = frame.contentDocument
+              ? frame.contentDocument.getElementById('hackathon')
+              : null;
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } catch (e) {}
+        }
+        frame.addEventListener('load', onFrameLoad);
+      }
+    }
+  }
+
+  card.addEventListener('click', openHackathon);
+  card.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openHackathon(); }
   });
 })();
 </script>
