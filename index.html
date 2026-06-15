@@ -1929,8 +1929,9 @@
         <div class="stat-label">Campaigns Shipped</div>
       </div>
       <div class="stat">
-        <div class="stat-num"><span class="suffix" style="margin-right:2px;">$</span><span data-counter="12">0</span><span class="suffix">M</span></div>
+        <div class="stat-num"><span class="suffix" style="margin-right:2px;">$</span><span data-counter="1.2">0</span><span class="suffix">M</span></div>
         <div class="stat-label">Revenue Influenced</div>
+        <div style="font-size:0.7rem;color:var(--muted-2);margin-top:4px;opacity:0.55;">Estimated based on KPI-driven campaign impact</div>
       </div>
       <div class="stat">
         <div class="stat-num"><span data-counter="5">0</span><span class="suffix">+</span></div>
@@ -3062,13 +3063,15 @@ const counterObserver = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if (e.isIntersecting) {
       e.target.querySelectorAll('[data-counter]').forEach(el => {
-        const target = parseInt(el.dataset.counter, 10);
+        const target = parseFloat(el.dataset.counter);
+        const isDecimal = el.dataset.counter.includes('.');
         const duration = 1400;
         const start = performance.now();
         const animate = (now) => {
           const t = Math.min((now - start) / duration, 1);
           const eased = 1 - Math.pow(1 - t, 3);
-          el.textContent = Math.round(eased * target);
+          const val = eased * target;
+          el.textContent = isDecimal ? val.toFixed(1) : Math.round(val);
           if (t < 1) requestAnimationFrame(animate);
         };
         requestAnimationFrame(animate);
