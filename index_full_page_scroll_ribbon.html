@@ -41,27 +41,71 @@
   }
   ::selection { background: var(--terra); color: var(--cream); }
 
-  /* ─── SCROLL PROGRESS ─── */
-  .scroll-progress {
-    position: fixed; top: 0; left: 0; height: 2px; width: 0;
-    background: var(--terra); z-index: 200;
-    transition: width 0.1s linear,
-                height 0.35s ease,
-                box-shadow 0.35s ease;
+  /* ─── SUBTLE FULL-PAGE SCROLL RIBBON ───
+     This is not a fixed side/top progress bar. It is a document-level SVG route
+     that quietly wanders across the whole page and reveals itself as you scroll. */
+  .scroll-progress { display: none; }
+
+  .page-scroll-ribbon {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 85;
+    pointer-events: none;
+    overflow: visible;
+    opacity: 0.46;
+    mix-blend-mode: multiply;
   }
-  .scroll-progress.narr-active {
-    height: 5px;
-    box-shadow: 0 0 24px 3px rgba(192,83,58,1.0),
-                0 0 54px 6px rgba(192,83,58,0.75),
-                0 0 90px 12px rgba(192,83,58,0.35);
-    animation: progressShimmer 1.8s ease-in-out infinite;
+  .page-scroll-ribbon path,
+  .page-scroll-ribbon circle {
+    vector-effect: non-scaling-stroke;
+    pointer-events: none;
   }
-  @keyframes progressShimmer {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: 0.38; }
+  .ribbon-ghost {
+    fill: none;
+    stroke: rgba(192,83,58,0.055);
+    stroke-width: 1.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .ribbon-glow {
+    fill: none;
+    stroke: rgba(192,83,58,0.13);
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: url(#ribbonSoftGlow);
+  }
+  .ribbon-draw {
+    fill: none;
+    stroke: rgba(192,83,58,0.34);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: url(#ribbonFineGlow);
+    transition: stroke-dashoffset 0.08s linear;
+  }
+  .ribbon-head {
+    fill: rgba(217,122,92,0.34);
+    filter: url(#ribbonFineGlow);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+  .page-scroll-ribbon.narr-active .ribbon-draw {
+    stroke: rgba(217,122,92,0.42);
+  }
+  .page-scroll-ribbon.narr-active .ribbon-head { opacity: 0.32; }
+
+  @media (max-width: 800px) {
+    .page-scroll-ribbon { opacity: 0.34; }
+    .ribbon-glow { stroke-width: 4.5; }
+    .ribbon-draw { stroke-width: 1.35; }
+    .ribbon-head { r: 2.6; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .scroll-progress.narr-active { animation: none; }
+    .ribbon-draw { transition: none; }
+    .ribbon-head { display: none; }
   }
 
   /* ─── NAV (always visible) ─── */
@@ -405,48 +449,6 @@
   .depth-up.d3 { transition-delay: 0.42s; }
   .depth-up.d4 { transition-delay: 0.56s; }
   .case-hook .ital { font-style: italic; color: var(--terra); font-weight: 500; }
-
-  .case-quote {
-    font-family: var(--serif-2);
-    font-style: italic;
-    font-weight: 500;
-    font-size: clamp(1.05rem, 1.55vw, 1.25rem);
-    line-height: 1.55;
-    color: var(--terra);
-    margin-bottom: 22px;
-    letter-spacing: 0.01em;
-    opacity: 0;
-    transform: translate3d(0, 28px, 0);
-    transition: opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
-    will-change: opacity, transform;
-  }
-  .case-quote.in { opacity: 1; transform: none; }
-  .case-wrap--alt .case-quote { color: var(--terra-soft); }
-
-  /* ── COMPANY BADGE ── */
-  .co-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 5px 11px 5px 7px;
-    border-radius: 7px;
-    font-family: var(--sans);
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: none;
-    border-left-width: 2px;
-    border-left-style: solid;
-    border-top: 1px solid transparent;
-    border-right: 1px solid transparent;
-    border-bottom: 1px solid transparent;
-    transition: box-shadow 0.3s ease;
-  }
-  .co-badge:hover {
-    filter: brightness(1.12);
-  }
-  .co-badge svg { flex-shrink: 0; }
   .case-subtitle {
     font-family: var(--serif-2); font-style: italic;
     font-size: clamp(1.05rem, 1.5vw, 1.3rem);
@@ -981,7 +983,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     *,*::before,*::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-    .narr-line, .narr-cta-btn, .tl-item, .int-tile, .case-hook, .case-quote, .depth-up {
+    .narr-line, .narr-cta-btn, .tl-item, .int-tile, .case-hook, .depth-up {
       opacity: 1 !important; transform: none !important;
     }
   }
@@ -1371,25 +1373,27 @@
   }
 
   .replay-ritual {
-    margin-top: 18px;
-    border: none;
-    background: none;
-    color: rgba(244,239,232,0.28);
-    padding: 4px 0;
+    margin-top: 22px;
+    border: 1px solid rgba(244,239,232,0.18);
+    background: rgba(244,239,232,0.06);
+    color: rgba(244,239,232,0.78);
+    border-radius: 999px;
+    padding: 11px 18px;
     font-family: var(--sans);
-    font-size: 0.6rem;
-    font-weight: 400;
-    letter-spacing: 0.22em;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     cursor: pointer;
-    border-bottom: 1px solid rgba(244,239,232,0.12);
-    transition: color 0.25s ease, border-color 0.25s ease;
+    backdrop-filter: blur(14px);
+    transition: background 0.25s ease, transform 0.25s ease, color 0.25s ease;
     pointer-events: auto;
   }
 
   .replay-ritual:hover {
-    color: rgba(244,239,232,0.55);
-    border-bottom-color: rgba(244,239,232,0.28);
+    background: rgba(244,239,232,0.13);
+    color: var(--cream);
+    transform: translateY(-1px);
   }
 
   .coffee-ritual.cup-served .ritual-start-copy {
@@ -1581,20 +1585,6 @@
     .ritual-video { transform: scale(1.01); object-fit: cover; object-position: center 65%; }
     .ritual-video-bg { transform: scale(1.22); }
     .ritual-cup-wrap { width: 90vw; height: 90vw; }
-
-    /* Raise scroll cue above iOS home indicator; also show it when cup first appears (mobile only) */
-    .ritual-scroll-cue {
-      bottom: max(64px, calc(env(safe-area-inset-bottom, 20px) + 32px));
-    }
-    .coffee-ritual.cup-served .ritual-scroll-cue {
-      opacity: 1;
-    }
-
-    /* Allow vertical swipes to scroll while horizontal drags still spin the cup.
-       OrbitControls sets touch-action:none inline, so !important is required. */
-    #ritualCupCanvas {
-      touch-action: pan-y !important;
-    }
 
     /* Indicator: smaller, anchored to bottom-right on mobile */
     .virtual-coffee-indicator {
@@ -1917,6 +1907,29 @@
 
 <div class="scroll-progress" id="progress"></div>
 
+<svg class="page-scroll-ribbon" id="pageScrollRibbon" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="ribbonSoftGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <filter id="ribbonFineGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="2.5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+  <path class="ribbon-ghost" id="ribbonGhost" d="" />
+  <path class="ribbon-glow" id="ribbonGlow" d="" />
+  <path class="ribbon-draw" id="ribbonDraw" d="" />
+  <circle class="ribbon-head" id="ribbonHead" r="3.2" cx="0" cy="0" />
+</svg>
+
 <nav id="nav" class="on-light">
   <a class="nav-logo" href="#hero">Shivani.</a>
   <div class="nav-links">
@@ -1971,9 +1984,8 @@
         <div class="stat-label">Campaigns Shipped</div>
       </div>
       <div class="stat">
-        <div class="stat-num"><span class="suffix" style="margin-right:2px;">$</span><span data-counter="1.2">0</span><span class="suffix">M</span></div>
+        <div class="stat-num"><span class="suffix" style="margin-right:2px;">$</span><span data-counter="12">0</span><span class="suffix">M</span></div>
         <div class="stat-label">Revenue Influenced</div>
-        <div style="font-size:0.7rem;color:var(--muted-2);margin-top:4px;opacity:0.55;">Estimated based on KPI-driven campaign impact</div>
       </div>
       <div class="stat">
         <div class="stat-num"><span data-counter="5">0</span><span class="suffix">+</span></div>
@@ -1992,17 +2004,13 @@
       </div>
       <div class="cred-row">
         <div class="cred-label">Recognition</div>
-        <div class="cred-value">TOFU Marketing Hackathon Winner · SURU Labs</div>
-      </div>
-      <div class="cred-row">
-        <div class="cred-label">Certifications</div>
         <div class="cred-value">
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;">
+          TOFU Marketing Hackathon Winner · SURU Labs
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
             <span style="background:rgba(244,239,232,0.08);border:1px solid rgba(244,239,232,0.15);border-radius:6px;padding:5px 12px;font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(244,239,232,0.7);">Google Analytics</span>
             <span style="background:rgba(244,239,232,0.08);border:1px solid rgba(244,239,232,0.15);border-radius:6px;padding:5px 12px;font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(244,239,232,0.7);">Google SEO</span>
             <span style="background:rgba(244,239,232,0.08);border:1px solid rgba(244,239,232,0.15);border-radius:6px;padding:5px 12px;font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(244,239,232,0.7);">Meta Ads</span>
             <span style="background:rgba(244,239,232,0.08);border:1px solid rgba(244,239,232,0.15);border-radius:6px;padding:5px 12px;font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(244,239,232,0.7);">Product Marketing</span>
-            <span style="background:rgba(244,239,232,0.08);border:1px solid rgba(244,239,232,0.15);border-radius:6px;padding:5px 12px;font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(244,239,232,0.7);">Integrated Marketing</span>
           </div>
         </div>
       </div>
@@ -2011,8 +2019,6 @@
     <div style="border-top:1px solid var(--rule-light);padding-top:32px;margin-top:32px;">
       <p style="font-family:var(--sans);font-size:0.66rem;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:rgba(244,239,232,0.4);margin:0 0 14px;">Core Skills</p>
       <div style="display:flex;flex-wrap:wrap;gap:10px;">
-
-        <!-- ── GROUP 1: Marketing + Growth Strategy ── -->
 
         <!-- Google Ads -->
         <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(66,133,244,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(66,133,244,0.1);">
@@ -2051,6 +2057,32 @@
           Email Marketing
         </span>
 
+        <!-- Power BI -->
+        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(242,200,17,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(242,200,17,0.08);">
+          <svg width="13" height="14" viewBox="0 0 24 24" style="flex-shrink:0;">
+            <rect x="3" y="12" width="4" height="9" rx="1" fill="#F2C811"/>
+            <rect x="10" y="7" width="4" height="14" rx="1" fill="#F2C811" opacity="0.8"/>
+            <rect x="17" y="3" width="4" height="18" rx="1" fill="#F2C811" opacity="0.6"/>
+          </svg>
+          Power BI
+        </span>
+
+        <!-- HubSpot CRM -->
+        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(255,122,89,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(255,122,89,0.1);">
+          <svg width="14" height="14" viewBox="0 0 24 24" style="flex-shrink:0;">
+            <circle cx="12" cy="12" r="3" fill="#FF7A59"/>
+            <line x1="12" y1="2"    x2="12" y2="6"    stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
+            <line x1="12" y1="18"   x2="12" y2="22"   stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
+            <line x1="4.22" y1="4.22"  x2="7.05" y2="7.05"   stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
+            <line x1="16.95" y1="16.95" x2="19.78" y2="19.78" stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
+            <line x1="2"  y1="12" x2="6"  y2="12"  stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
+            <line x1="18" y1="12" x2="22" y2="12"  stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
+            <line x1="4.22"  y1="19.78" x2="7.05"  y2="16.95" stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
+            <line x1="16.95" y1="7.05"  x2="19.78" y2="4.22"  stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          HubSpot CRM
+        </span>
+
         <!-- A/B Testing -->
         <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(244,239,232,0.2);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(244,239,232,0.06);">
           <svg width="18" height="13" viewBox="0 0 32 22" style="flex-shrink:0;">
@@ -2077,156 +2109,7 @@
           Canva
         </span>
 
-        <!-- ── GROUP 2: CRM + Marketing Tools ── -->
-
-        <!-- HubSpot CRM -->
-        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(255,122,89,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(255,122,89,0.1);">
-          <svg width="14" height="14" viewBox="0 0 24 24" style="flex-shrink:0;">
-            <circle cx="12" cy="12" r="3" fill="#FF7A59"/>
-            <line x1="12" y1="2"    x2="12" y2="6"    stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
-            <line x1="12" y1="18"   x2="12" y2="22"   stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
-            <line x1="4.22" y1="4.22"  x2="7.05" y2="7.05"   stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
-            <line x1="16.95" y1="16.95" x2="19.78" y2="19.78" stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
-            <line x1="2"  y1="12" x2="6"  y2="12"  stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
-            <line x1="18" y1="12" x2="22" y2="12"  stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
-            <line x1="4.22"  y1="19.78" x2="7.05"  y2="16.95" stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
-            <line x1="16.95" y1="7.05"  x2="19.78" y2="4.22"  stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          HubSpot CRM
-        </span>
-
-        <!-- Salesforce -->
-        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(0,161,224,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(0,161,224,0.1);">
-          <svg width="14" height="14" viewBox="0 0 24 24" style="flex-shrink:0;">
-            <path fill="#00A1E0" d="M10 4.5A3.5 3.5 0 0 1 16.4 6a4 4 0 0 1 5.1 3.8 3.5 3.5 0 0 1-.5 6.8H5a3.5 3.5 0 0 1-.8-6.9A4 4 0 0 1 10 4.5z"/>
-          </svg>
-          Salesforce
-        </span>
-
-        <!-- Mailchimp -->
-        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(255,226,0,0.45);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(255,226,0,0.07);">
-          <svg width="14" height="14" viewBox="0 0 24 24" style="flex-shrink:0;">
-            <ellipse cx="12" cy="11" rx="7" ry="8" fill="#FFE200"/>
-            <ellipse cx="12" cy="11" rx="4" ry="5" fill="#241C15"/>
-            <circle cx="10" cy="10" r="1.2" fill="white"/>
-            <circle cx="14" cy="10" r="1.2" fill="white"/>
-            <path d="M10 13.5 Q12 15 14 13.5" stroke="white" stroke-width="1" fill="none" stroke-linecap="round"/>
-          </svg>
-          Mailchimp
-        </span>
-
-        <!-- ManyChat -->
-        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(0,149,255,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(0,149,255,0.1);">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-            <rect width="24" height="24" rx="6" fill="#0095FF"/>
-            <path d="M5 8h14M5 12h9M5 16h6" stroke="white" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          ManyChat
-        </span>
-
-        <!-- Dripify -->
-        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(99,102,241,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(99,102,241,0.1);">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-            <path d="M12 3 C12 3 6 9 6 14 a6 6 0 0 0 12 0 C18 9 12 3 12 3z" fill="#6366F1"/>
-            <path d="M12 10 C12 10 9 13 9 15.5 a3 3 0 0 0 6 0 C15 13 12 10 12 10z" fill="white" opacity="0.5"/>
-          </svg>
-          Dripify
-        </span>
-
-        <!-- Instantly.ai -->
-        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(99,198,110,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(99,198,110,0.08);">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-            <rect width="24" height="24" rx="5" fill="#63C66E"/>
-            <path d="M7 12 L11 16 L17 8" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Instantly.ai
-        </span>
-
-        <!-- Zapier -->
-        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(255,79,0,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(255,79,0,0.1);">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-            <path d="M12 2L14.5 9.5H22L16 14L18.5 21.5L12 17L5.5 21.5L8 14L2 9.5H9.5L12 2Z" fill="#FF4F00"/>
-          </svg>
-          Zapier
-        </span>
-
-        <!-- ClickUp -->
-        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(122,36,232,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(122,36,232,0.1);">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-            <defs>
-              <linearGradient id="cug" x1="0" y1="1" x2="1" y2="0">
-                <stop offset="0%" stop-color="#7B24E8"/>
-                <stop offset="50%" stop-color="#FF3BFF"/>
-                <stop offset="100%" stop-color="#00D2FF"/>
-              </linearGradient>
-            </defs>
-            <path d="M4 15 L8.5 10 L12 13.5 L15.5 10 L20 15" stroke="url(#cug)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          </svg>
-          ClickUp
-        </span>
-
-        <!-- ── GROUP 3: Analytics ── -->
-
-        <!-- Python -->
-        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(55,118,171,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(55,118,171,0.1);">
-          <svg width="14" height="14" viewBox="0 0 24 24" style="flex-shrink:0;">
-            <path fill="#3776AB" d="M11.95 2C7.1 2 7.4 4.1 7.4 4.1l.01 2.08h4.63v.62H5.59S2 6.38 2 11.28s3.13 4.72 3.13 4.72h1.87v-2.27s-.1-3.13 3.08-3.13h5.3s2.98.05 2.98-2.88V4.98S18.91 2 11.95 2zm-2.96 1.7c.53 0 .96.43.96.96s-.43.96-.96.96-.96-.43-.96-.96.43-.96.96-.96z"/>
-            <path fill="#FFD43B" d="M12.05 22c4.85 0 4.55-2.1 4.55-2.1l-.01-2.08h-4.63v-.62h6.45S22 17.62 22 12.72s-3.13-4.72-3.13-4.72h-1.87v2.27s.1 3.13-3.08 3.13h-5.3S5.64 13.35 5.64 16.28V19.02S4.09 22 12.05 22zm2.96-1.7c-.53 0-.96-.43-.96-.96s.43-.96.96-.96.96.43.96.96-.43.96-.96.96z"/>
-          </svg>
-          Python
-        </span>
-
-        <!-- SQL -->
-        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(0,117,163,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(0,117,163,0.1);">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-            <ellipse cx="12" cy="6" rx="8" ry="3" stroke="#0075A3" stroke-width="1.8" fill="rgba(0,117,163,0.18)"/>
-            <path d="M4 6v6c0 1.66 3.58 3 8 3s8-1.34 8-3V6" stroke="#0075A3" stroke-width="1.8" fill="none"/>
-            <path d="M4 12v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" stroke="#0075A3" stroke-width="1.8" fill="none"/>
-          </svg>
-          SQL
-        </span>
-
-        <!-- Google Analytics -->
-        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(255,162,0,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(255,162,0,0.08);">
-          <svg width="14" height="14" viewBox="0 0 24 24" style="flex-shrink:0;">
-            <rect x="2" y="12" width="4" height="9" rx="1.5" fill="#FFA200" opacity="0.6"/>
-            <rect x="10" y="7" width="4" height="14" rx="1.5" fill="#FFA200" opacity="0.8"/>
-            <circle cx="20" cy="5" r="3" fill="#FFA200"/>
-          </svg>
-          Google Analytics
-        </span>
-
-        <!-- Power BI -->
-        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(242,200,17,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(242,200,17,0.08);">
-          <svg width="13" height="14" viewBox="0 0 24 24" style="flex-shrink:0;">
-            <rect x="3" y="12" width="4" height="9" rx="1" fill="#F2C811"/>
-            <rect x="10" y="7" width="4" height="14" rx="1" fill="#F2C811" opacity="0.8"/>
-            <rect x="17" y="3" width="4" height="18" rx="1" fill="#F2C811" opacity="0.6"/>
-          </svg>
-          Power BI
-        </span>
-
-        <!-- Amplitude -->
-        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(20,20,200,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(20,20,200,0.1);">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-            <rect width="24" height="24" rx="4" fill="#1414C8"/>
-            <path d="M4 18L9 7l4 7 3-4 4 8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          </svg>
-          Amplitude
-        </span>
-
-        <!-- Looker -->
-        <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(52,168,83,0.38);border-radius:50px;padding:7px 16px;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;color:rgba(244,239,232,0.88);background:rgba(52,168,83,0.08);">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-            <circle cx="12" cy="10" r="5" stroke="#34A853" stroke-width="2"/>
-            <circle cx="12" cy="10" r="2" fill="#34A853"/>
-            <path d="M15.5 15.5L20 20" stroke="#34A853" stroke-width="2.5" stroke-linecap="round"/>
-          </svg>
-          Looker
-        </span>
-
       </div>
-    </div>      </div>
     </div>
   </div>
 </section>
@@ -2235,18 +2118,18 @@
 <section id="work" style="background:var(--paper);padding:80px 6vw 20px;max-width:100%;">
   <p style="font-family:var(--sans);font-size:0.72rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--terra);margin:0 0 14px;">The Work</p>
   <h2 style="font-family:var(--serif);font-weight:800;font-size:clamp(2.8rem,6vw,5rem);line-height:1.05;color:var(--ink);margin:0 0 18px;">Selected Work.</h2>
-  <p style="font-family:var(--serif-2);font-style:italic;font-size:clamp(1rem,1.6vw,1.25rem);color:var(--muted);margin:0;">Six cases. Every one a different way of thinking about the same problem.</p>
+  <p style="font-family:var(--serif-2);font-style:italic;font-size:clamp(1rem,1.6vw,1.25rem);color:var(--muted);margin:0;">Four cases: strategy, execution, analytics, and the intersection of all three.</p>
 </section>
 
 <!-- ═════════════════ CASE STUDY 01 ═════════════════ -->
-<div id="case-1" class="case-wrap">
+<div class="case-wrap">
   <section class="case-scene" data-nav-theme="light">
     <aside class="case-left">
       <div class="case-engagement-label depth-up"><span class="cel-type">Consulting Project · Funnel Strategy + HubSpot</span><span class="cel-sep"> · </span><span class="cel-detail">UPBEAT Growth LLC · 2026</span></div>
       <div class="case-num depth-up">01</div>
       <span class="case-tag depth-up d1" style="color: var(--terra);">Funnel Strategy · HubSpot · Email</span>
       <div class="case-meta">
-        <div class="case-meta-row depth-up d2"><span class="case-meta-label">Client</span><span class="case-meta-value"><span class="co-badge" style="background:rgba(255,107,53,0.10);border-left-color:#FF6B35;border-top-color:rgba(255,107,53,0.18);border-right-color:rgba(255,107,53,0.18);border-bottom-color:rgba(255,107,53,0.18);color:#FF6B35;box-shadow:0 0 10px 0 rgba(255,107,53,0.18);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#FF6B35"/></svg>UPBEAT Growth LLC</span></span></div>
+        <div class="case-meta-row depth-up d2"><span class="case-meta-label">Client</span><span class="case-meta-value">UPBEAT Growth LLC</span></div>
         <div class="case-meta-row depth-up d2"><span class="case-meta-label">Channel</span><span class="case-meta-value">Paid Ads + Email</span></div>
         <div class="case-meta-row depth-up d3"><span class="case-meta-label">Goal</span><span class="case-meta-value">Lead Quality + Pipeline</span></div>
         <div class="case-meta-row depth-up d3"><span class="case-meta-label">Stack</span><span class="case-meta-value">HubSpot · Lead Scoring · Email Automation · Quiz Architecture</span></div>
@@ -2255,14 +2138,24 @@
     </aside>
 
     <div class="case-right">
-      <p class="case-quote">"This one taught me that the funnel was never the problem."</p>
       <h3 class="case-hook">
         The leads were coming in. <span class="ital">The right ones weren't staying.</span>
       </h3>
       <p class="case-subtitle depth-up">A quiz funnel built for UPBEAT Growth LLC, designed to filter and warm leads before they ever got on a call.</p>
 
+      <p class="case-section-label depth-up">The Challenge</p>
       <div class="case-body depth-up d1">
-        <p>Paid campaigns were driving traffic straight to a booking page. The leads that converted weren't ready to buy, and the qualified leads weren't converting at all. The funnel was just asking for too much, too soon. I rebuilt the acquisition flow around an <strong>8-stage quiz architecture</strong> that sorted leads into three tracks and triggered sales outreach automatically via <strong>HubSpot</strong> once a contact crossed 40 lead score points.</p>
+        <p>Paid campaigns were driving traffic straight to a booking page, and the funnel was failing in two directions at once. <strong>The leads that did convert weren't ready to buy</strong>, burning the sales team's time on calls that went nowhere. <strong>And the leads that were actually qualified weren't converting at all:</strong> the jump from cold ad to calendar booking was too big an ask for someone making a serious decision.</p>
+        <p>Same structural flaw, two different failure modes. The targeting and creative weren't the problem; the funnel was just asking for too much, too soon.</p>
+      </div>
+
+      <div class="case-divider"></div>
+
+      <p class="case-section-label depth-up">The Approach</p>
+      <div class="case-body depth-up d1">
+        <p>I redesigned the acquisition flow around an <strong>8-stage quiz architecture</strong>: ad → quiz landing → questions → email capture → results page → segmented nurture → strategy call → customer. The quiz sorted leads into three tracks (Beginner, Intermediate, Advanced), each with a different follow-up from that point forward.</p>
+        <p>Behavioural lead scoring triggered sales outreach automatically once a contact crossed 40 points. The results page got rebuilt as the trust moment it should be: highest-intent point in the funnel, and it had been treated as an afterthought.</p>
+        <p>The infrastructure ran on <strong>HubSpot</strong>: contact segmentation, behavioural lead scoring (threshold: 40 points to trigger sales outreach), and automated nurture sequences branching by quiz result track. Email sequences were written and scheduled for each of the three lead segments, with subject-line and content variation built in from the start. Every touchpoint from quiz entry to sales call was tracked, measurable, and improvable.</p>
       </div>
 
       <div class="case-divider"></div>
@@ -2283,14 +2176,14 @@
 </div>
 
 <!-- ═════════════════ CASE STUDY 02 ═════════════════ -->
-<div id="case-2" class="case-wrap case-wrap--alt">
+<div class="case-wrap case-wrap--alt">
   <section class="case-scene" data-nav-theme="dark">
     <aside class="case-left">
       <div class="case-engagement-label depth-up"><span class="cel-type">Consulting Project · Paid Ads + CRM Automation</span><span class="cel-sep"> · </span><span class="cel-detail">UPBEAT Growth LLC · 2026</span></div>
       <div class="case-num depth-up">02</div>
       <span class="case-tag depth-up d1">Paid Ads · Webinar Strategy · CRM</span>
       <div class="case-meta">
-        <div class="case-meta-row depth-up d2"><span class="case-meta-label">Client</span><span class="case-meta-value"><span class="co-badge" style="background:rgba(255,107,53,0.10);border-left-color:#FF6B35;border-top-color:rgba(255,107,53,0.18);border-right-color:rgba(255,107,53,0.18);border-bottom-color:rgba(255,107,53,0.18);color:#FF6B35;box-shadow:0 0 10px 0 rgba(255,107,53,0.18);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#FF6B35"/></svg>UPBEAT Growth LLC</span></span></div>
+        <div class="case-meta-row depth-up d2"><span class="case-meta-label">Client</span><span class="case-meta-value">UPBEAT Growth LLC</span></div>
         <div class="case-meta-row depth-up d2"><span class="case-meta-label">Channel</span><span class="case-meta-value">Paid Ads + Webinars</span></div>
         <div class="case-meta-row depth-up d3"><span class="case-meta-label">Goal</span><span class="case-meta-value">Pipeline + Authority</span></div>
         <div class="case-meta-row depth-up d3"><span class="case-meta-label">Stack</span><span class="case-meta-value">Meta Ads · HubSpot · Lead Scoring · Retargeting</span></div>
@@ -2299,14 +2192,22 @@
     </aside>
 
     <div class="case-right">
-      <p class="case-quote">"Cold traffic doesn't convert to conversations. You have to earn the meeting first."</p>
       <h3 class="case-hook">
         $45K in revenue. $4K in ad spend. <span class="ital">The funnel earns trust before asking for it.</span>
       </h3>
       <p class="case-subtitle depth-up">A webinar funnel built for UPBEAT Growth LLC, using education to bridge cold traffic and real conversations.</p>
 
+      <p class="case-section-label depth-up">The Challenge</p>
       <div class="case-body depth-up d1">
-        <p>The pipeline ran on referrals. Paid acquisition to a contact form wasn't converting. I built a webinar-as-lead-gen system: targeted <strong>Meta Ads</strong> to drive registrations, a live session built around genuine value, then <strong>HubSpot</strong> lead scoring and segmented follow-ups based on attendance depth. Retargeting sequences ran separately for no-shows and non-converters. The webinar was proof of capability, not a pitch.</p>
+        <p>The pipeline was running almost entirely on referrals. Paid acquisition had been tried: cold traffic to a contact form wasn't converting to meaningful conversations. <strong>I needed something between the initial ad click and the actual conversation,</strong> something that earned the meeting before asking for it.</p>
+      </div>
+
+      <div class="case-divider"></div>
+
+      <p class="case-section-label depth-up">The Approach</p>
+      <div class="case-body depth-up d1">
+        <p>I built a webinar-as-lead-gen system: targeted ads to drive registrations → a live session built around genuine value → lead scoring based on attendance and engagement → CRM automation with segmented follow-ups → retargeting for no-shows and non-converters. <strong>The webinar was proof of capability, not a pitch.</strong> That distinction is what made the follow-up conversations worth having.</p>
+        <p>Paid acquisition ran on <strong>Meta Ads</strong>, targeted to audience segments most likely to register, with retargeting sequences built separately for no-shows and non-converters post-event. <strong>HubSpot</strong> handled lead scoring based on attendance depth and post-webinar engagement, triggering personalised follow-up sequences automatically. The retargeting layer meant the ad spend kept working after the event ended, not just during registration.</p>
       </div>
 
       <div class="case-divider"></div>
@@ -2327,14 +2228,14 @@
 </div>
 
 <!-- ═════════════════ CASE STUDY 03 ═════════════════ -->
-<div id="case-3" class="case-wrap">
+<div class="case-wrap">
   <section class="case-scene" data-nav-theme="light">
     <aside class="case-left">
       <div class="case-engagement-label depth-up"><span class="cel-type">Agency Internship · SEO/AEO + Paid Media</span><span class="cel-sep"> · </span><span class="cel-detail">UPBEAT Growth LLC · New York</span></div>
       <div class="case-num depth-up">03</div>
       <span class="case-tag depth-up d1" style="color: var(--terra);">Google Ads · Meta Ads · SEO / AEO · Email · Content</span>
       <div class="case-meta">
-        <div class="case-meta-row depth-up d2"><span class="case-meta-label">Agency</span><span class="case-meta-value"><span class="co-badge" style="background:rgba(255,107,53,0.10);border-left-color:#FF6B35;border-top-color:rgba(255,107,53,0.18);border-right-color:rgba(255,107,53,0.18);border-bottom-color:rgba(255,107,53,0.18);color:#FF6B35;box-shadow:0 0 10px 0 rgba(255,107,53,0.18);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#FF6B35"/></svg>UPBEAT Growth LLC</span></span></div>
+        <div class="case-meta-row depth-up d2"><span class="case-meta-label">Agency</span><span class="case-meta-value">UPBEAT Growth LLC</span></div>
         <div class="case-meta-row depth-up d2"><span class="case-meta-label">Verticals</span><span class="case-meta-value">Hospitality · Retail · Legal</span></div>
         <div class="case-meta-row depth-up d3"><span class="case-meta-label">Stack</span><span class="case-meta-value">Google Ads · Meta Ads · SEO · AEO · Email · Canva</span></div>
         <div class="case-meta-row depth-up d3"><span class="case-meta-label">Location</span><span class="case-meta-value">New York City</span></div>
@@ -2342,14 +2243,30 @@
     </aside>
 
     <div class="case-right">
-      <p class="case-quote">"Three clients, three industries, and I had to become a different strategist for each one."</p>
       <h3 class="case-hook">
         Three industries at once. <span class="ital">Every piece of content had to be found before it could convert.</span>
       </h3>
       <p class="case-subtitle depth-up">Managing simultaneous campaigns across hospitality, retail, and legal, where each client needs a completely different approach and every content decision had to be built for both the human reader and the answer engine.</p>
 
+      <p class="case-section-label depth-up">The Challenge</p>
       <div class="case-body depth-up d1">
-        <p>Three industries in parallel means three sets of KPIs, three audiences, and three completely different creative angles. <b>Hospitality:</b> booking-driven campaigns built on urgency and social proof. <b>Retail:</b> product-led creative timed to inventory cycles. <b>Legal:</b> authority-first content where trust signals matter more than volume. Across all three, content was structured for Answer Engine Optimisation, built to surface in featured snippets and AI-generated answers, not just ranked pages. My team also won the <strong>TOFU Marketing Hackathon</strong> run by SURU Labs that year.</p>
+        <p>At a growth agency, every client has a different business model, a different audience, and a different definition of success. The job isn't just running campaigns; it's getting inside each vertical fast enough to build the right strategy, not just apply the same playbook. <strong>Three industries in parallel means three sets of KPIs, three audiences, and three completely different creative angles, without letting any of them slip.</strong></p>
+      </div>
+
+      <div class="case-divider"></div>
+
+      <p class="case-section-label depth-up">The Approach</p>
+      <div class="case-body depth-up d1">
+        <p><b>Hospitality:</b> booking-driven campaigns where urgency and social proof do the work. <b>Retail:</b> product-led creative with audience segmentation timed to inventory cycles. <b>Legal:</b> authority-first content where trust signals matter more than volume. Each vertical required a different creative and targeting strategy, but the same analytical foundation underneath: <strong>define the conversion event, build toward it, measure everything that matters.</strong></p>
+        <p>Alongside the agency work: my team won the TOFU Marketing Hackathon run by SURU Labs, building a complete channel strategy for THORN under competition pressure. That's where the multi-client rigour and the strategic instinct had to show up at the same time.</p>
+        <p>On <strong>Meta Ads and Google Ads</strong>, I managed 5–10 active ad sets per client simultaneously, setting up campaigns from scratch, defining audience targeting, and running 2–4 creative variants per campaign. Performance was monitored weekly; targeting and creative decisions were adjusted based on real data, not instinct. Alongside paid: segmented email campaigns with list management, subject-line A/B testing, and open rates consistently in the <strong>15–25% range</strong>. Content production covered social, email, blog, and website copy, all produced and scheduled across 5+ active client accounts at the same time.</p>
+      </div>
+
+      <div class="case-divider"></div>
+
+      <p class="case-section-label depth-up">The AEO Layer</p>
+      <div class="case-body depth-up d1">
+        <p>Across every client, content wasn't just being produced; it was being structured to answer specific questions. Blog posts, service pages, and social copy were built around the exact phrases a potential customer would type into Google or ask an AI assistant. <strong>Answer Engine Optimisation meant treating every content piece as a candidate for a featured snippet or a direct AI-generated answer:</strong> structuring headers as questions, leading paragraphs with direct answers, and building FAQ sections that matched real search intent. For the hospitality client, this meant owning "best Airbnb in [location]"-style queries. For the law firm, it meant structuring service pages so that Google's AI Overview would surface them for legal intent searches. For the jewelry retailer, it meant product descriptions built to answer "what is the best gift for X" directly. Same rigour, three completely different answer architectures.</p>
       </div>
 
       <div class="case-divider"></div>
@@ -2387,14 +2304,14 @@
 </div>
 
 <!-- ═════════════════ CASE STUDY 04 ═════════════════ -->
-<div id="case-4" class="case-wrap case-wrap--alt">
+<div class="case-wrap case-wrap--alt">
   <section class="case-scene" data-nav-theme="dark">
     <aside class="case-left">
       <div class="case-engagement-label depth-up"><span class="cel-type">Full-time Employment</span><span class="cel-sep"> · </span><span class="cel-detail">TCS / Deutsche Bank · Pune</span></div>
       <div class="case-num depth-up">04</div>
       <span class="case-tag depth-up d1">Marketing Analytics</span>
       <div class="case-meta">
-        <div class="case-meta-row depth-up d2"><span class="case-meta-label">Company</span><span class="case-meta-value"><span class="co-badge" style="background:rgba(0,44,166,0.10);border-left-color:#002CA6;border-top-color:rgba(0,44,166,0.2);border-right-color:rgba(0,44,166,0.2);border-bottom-color:rgba(0,44,166,0.2);color:#5b8ff9;box-shadow:0 0 10px 0 rgba(0,44,166,0.2);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="7" height="14" rx="1.5" fill="#5b8ff9"/><rect x="14" y="5" width="7" height="14" rx="1.5" fill="#5b8ff9" opacity="0.55"/><rect x="9.5" y="8" width="5" height="8" rx="1" fill="#5b8ff9" opacity="0.8"/></svg>TCS / Deutsche Bank</span></span></div>
+        <div class="case-meta-row depth-up d2"><span class="case-meta-label">Company</span><span class="case-meta-value">TCS / Deutsche Bank</span></div>
         <div class="case-meta-row depth-up d2"><span class="case-meta-label">Stack</span><span class="case-meta-value">Power BI · A/B Testing</span></div>
         <div class="case-meta-row depth-up d3"><span class="case-meta-label">Role</span><span class="case-meta-value">Marketing Analyst</span></div>
         <div class="case-meta-row depth-up d3"><span class="case-meta-label">Duration</span><span class="case-meta-value">3 Years · Pune</span></div>
@@ -2402,14 +2319,23 @@
     </aside>
 
     <div class="case-right">
-      <p class="case-quote">"I'd never worked inside a bank before. The data was everywhere. Nobody was using it."</p>
       <h3 class="case-hook">
         A global bank's trading platform. Millions of users. <span class="ital">And data that wasn't being used.</span>
       </h3>
       <p class="case-subtitle depth-up">Three years building the analytics infrastructure that connected user behaviour to campaign decisions, inside one of the world's largest financial institutions.</p>
 
+      <p class="case-section-label depth-up">The Challenge</p>
       <div class="case-body depth-up d1">
-        <p>Deutsche Bank's marketing team had data across campaign logs, platform activity, and user behaviour signals on a live trading product. What they didn't have was a way to make it actionable. I built <strong>Power BI</strong> dashboards giving the team a single source of truth, then designed and ran A/B tests on the trading platform itself to isolate which changes drove measurable user action. The computer science background mattered here: writing queries, understanding the data pipeline, and working directly with engineering and product meant analysis turned into actual decisions, not just slides.</p>
+        <p>Deutsche Bank's marketing team had data: campaign logs, platform activity, user behaviour signals across a live trading product. What they didn't have was a way to make it actionable. Reports lived in silos. Campaign decisions were made on instinct. <strong>Nobody could reliably answer which changes moved users to act, and which were just noise.</strong></p>
+        <p>My job, as an analyst embedded via TCS, was to build the infrastructure that answered that question and kept answering it.</p>
+      </div>
+
+      <div class="case-divider"></div>
+
+      <p class="case-section-label depth-up">The Approach</p>
+      <div class="case-body depth-up d1">
+        <p>I built and maintained Power BI dashboards that pulled from campaign performance, user activity, and platform engagement, giving the marketing team a single source of truth for the first time. On top of that, I designed and ran A/B tests on the trading platform itself: testing copy, UI prompts, and CTA placements to isolate which changes drove measurable user action.</p>
+        <p>The computer science background mattered here. I could write the queries, understand the data pipeline, and work directly with the engineering and product teams. <strong>That cross-functional credibility is what turned analysis into actual decisions, not just slides.</strong></p>
       </div>
 
       <div class="case-divider"></div>
@@ -2430,7 +2356,7 @@
 </div>
 
 <!-- ═════════════════ CASE STUDY 05 ═════════════════ -->
-<div id="case-5" class="case-wrap">
+<div class="case-wrap">
   <section class="case-scene" data-nav-theme="light">
     <aside class="case-left">
       <div class="case-engagement-label depth-up"><span class="cel-type">The Extern Program</span><span class="cel-sep"> · </span><span class="cel-detail">Beats by Dre Brief · 2025</span></div>
@@ -2439,7 +2365,7 @@
       <span class="case-tag depth-up d1" style="color: var(--terra); margin-top: 6px;">Externship Program</span>
       <div class="case-meta">
         <div class="case-meta-row depth-up d2"><span class="case-meta-label">Program</span><span class="case-meta-value">The Extern Program</span></div>
-        <div class="case-meta-row depth-up d2"><span class="case-meta-label">Company Brief</span><span class="case-meta-value"><span class="co-badge" style="background:rgba(220,0,0,0.10);border-left-color:#DC0000;border-top-color:rgba(220,0,0,0.18);border-right-color:rgba(220,0,0,0.18);border-bottom-color:rgba(220,0,0,0.18);color:#e85555;box-shadow:0 0 10px 0 rgba(220,0,0,0.18);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#DC0000"/><circle cx="12" cy="12" r="4" fill="white"/><circle cx="12" cy="12" r="1.5" fill="#DC0000"/></svg>Beats by Dre</span></span></div>
+        <div class="case-meta-row depth-up d2"><span class="case-meta-label">Company Brief</span><span class="case-meta-value">Beats by Dre</span></div>
         <div class="case-meta-row depth-up d3"><span class="case-meta-label">Method</span><span class="case-meta-value">Survey Design · AIDA Mapping</span></div>
         <div class="case-meta-row depth-up d3"><span class="case-meta-label">Output</span><span class="case-meta-value">Dashboard · ManyChat Bot</span></div>
         <div class="case-meta-row depth-up d3"><span class="case-meta-label">Duration</span><span class="case-meta-value">July – Aug 2025</span></div>
@@ -2447,14 +2373,22 @@
     </aside>
 
     <div class="case-right">
-      <p class="case-quote">"I learned more about why people buy things from this project than any class ever taught me."</p>
       <h3 class="case-hook">
         A global audio brand. A consumer who buys on feeling but can't explain why. <span class="ital">That's the research brief.</span>
       </h3>
       <p class="case-subtitle depth-up">A structured externship program brief with Beats by Dre, using AIDA journey mapping and custom survey design to decode the gap between what consumers say and what actually drives the decision.</p>
 
+      <p class="case-section-label depth-up">The Challenge</p>
       <div class="case-body depth-up d1">
-        <p>Beats competes in a market where purchase decisions are emotional and identity-driven. The brief was to understand what drives loyalty and repurchase, and where the customer journey breaks down for people who considered but didn't convert. I designed custom surveys structured around the AIDA framework, mapping Awareness, Interest, Desire, and Action signals across buyer segments. Insights were delivered via a <strong>Gamma dashboard</strong> for stakeholder review and a <strong>ManyChat chatbot</strong> that let stakeholders query findings interactively, turning a static research output into a navigable insight system.</p>
+        <p>Beats by Dre competes in a market where purchase decisions are emotional and identity-driven. The brief: understand what's actually driving loyalty and repurchase, and where the customer journey breaks down for people who considered but didn't convert. The challenge was designing research that surfaced honest behavioural signals, not just socially acceptable answers.</p>
+      </div>
+
+      <div class="case-divider"></div>
+
+      <p class="case-section-label depth-up">The Approach</p>
+      <div class="case-body depth-up d1">
+        <p>I designed custom surveys in Google Forms structured around the AIDA framework, mapping Awareness, Interest, Desire, and Action signals across different buyer segments. Responses were analysed for patterns in decision triggers, loyalty drivers, and conversion drop-off points.</p>
+        <p>Insights were synthesised and delivered via two formats: a Gamma dashboard for stakeholder review, and a ManyChat chatbot that let stakeholders query findings interactively, turning a static research output into a navigable insight system.</p>
       </div>
 
       <div class="case-divider"></div>
@@ -2467,49 +2401,6 @@
       </div>
 
       <p class="depth-up d2" style="font-style:italic;font-size:0.78rem;color:var(--muted);margin-top:24px;">Completed as part of The Extern Program, a structured externship platform placing candidates on real company briefs.</p>
-    </div>
-  </section>
-</div>
-
-<!-- ═════════════════ CASE STUDY 06 ═════════════════ -->
-<div id="case-6" class="case-wrap case-wrap--alt">
-  <section class="case-scene" data-nav-theme="dark">
-    <aside class="case-left">
-      <div class="case-engagement-label depth-up"><span class="cel-type">Uber Eats · Product Strategy + GTM</span><span class="cel-sep"> · </span><span class="cel-detail">Yeshiva University · 2025</span></div>
-      <div class="case-num depth-up">06</div>
-      <span class="case-tag depth-up d1">Consumer Research · Product Concepts · GTM</span>
-      <div class="case-meta">
-        <div class="case-meta-row depth-up d2"><span class="case-meta-label">Company</span><span class="case-meta-value"><span class="co-badge" style="background:rgba(0,0,0,0.18);border-left-color:#06C167;border-top-color:rgba(6,193,103,0.2);border-right-color:rgba(6,193,103,0.2);border-bottom-color:rgba(6,193,103,0.2);color:#06C167;box-shadow:0 0 10px 0 rgba(6,193,103,0.22);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#000"/><path d="M6 7h3.5v6.5a2.5 2.5 0 0 0 5 0V7H18v6.5a6 6 0 0 1-12 0V7z" fill="#06C167"/></svg>Uber Eats</span></span></div>
-        <div class="case-meta-row depth-up d2"><span class="case-meta-label">Method</span><span class="case-meta-value">Surveys · User Interviews · Behavioral Analysis</span></div>
-        <div class="case-meta-row depth-up d3"><span class="case-meta-label">Output</span><span class="case-meta-value">NextBite · TwinCart · GTM Roadmap</span></div>
-        <div class="case-meta-row depth-up d3"><span class="case-meta-label">Year</span><span class="case-meta-value">2025</span></div>
-      </div>
-    </aside>
-
-    <div class="case-right">
-      <p class="case-quote">"We went in with a research question. We came out with a product idea."</p>
-      <h3 class="case-hook">
-        Grocery adoption wasn't a marketing problem. <span class="ital">It was a habit formation problem.</span>
-      </h3>
-      <p class="case-subtitle depth-up">Primary research into why Uber Eats grocery delivery wasn't converting, and two product concepts built directly from the behavioral gaps the research uncovered.</p>
-
-      <div class="case-body depth-up d1">
-        <p>Survey data showed most users were aware Uber Eats delivered groceries. Awareness wasn't the gap. The real barrier was moment-of-use: grocery ordering lived in a completely different mental context than ordering food. Users opened the app hungry, not planning. The highest-intent moment for grocery adoption wasn't a separate session; it was the 60 seconds immediately after a food order was placed. Two concepts addressed this directly: <strong>NextBite</strong> surfaces grocery suggestions in that exact post-order window, and <strong>TwinCart</strong> eliminates the switching cost entirely by combining food and groceries into one checkout. Both reduce friction at the behavioral bottleneck, not at awareness.</p>
-      </div>
-
-      <div class="case-divider"></div>
-
-      <p class="case-section-label depth-up">The Results</p>
-      <div class="case-results">
-        <div class="stat-block depth-up"><div class="stat-block-num">Habit</div><div class="stat-block-label">Not awareness. Identified the real behavioral barrier from primary research</div></div>
-        <div class="stat-block depth-up d1"><div class="stat-block-num">60 sec</div><div class="stat-block-label">The post-order window identified as peak grocery intent moment</div></div>
-        <div class="stat-block depth-up d2"><div class="stat-block-num">2 concepts</div><div class="stat-block-label">NextBite + TwinCart, both built from friction points not assumptions</div></div>
-      </div>
-
-      <button class="read-full depth-up d2" onclick="openViewer(4)">
-        Read the full case study
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-      </button>
     </div>
   </section>
 </div>
@@ -2846,15 +2737,8 @@ Would love to connect!</textarea>
   }
   window.skipRitual = skipRitual;
 
-  // Sync internal closure state if the regular script already bypassed the ritual
-  // (happens when the page was opened via a direct anchor or text-fragment link).
-  if (window._ritualBypassed) {
-    ritualStarted = true;
-    cupSequenceStarted = true;
-  }
-
   async function playRitualVideo() {
-    if (ritualStarted || document.body.classList.contains('ritual-served')) return;
+    if (ritualStarted) return;
     ritualStarted = true;
     cupSequenceStarted = false;
     ritual.classList.add('started');
@@ -3091,6 +2975,13 @@ Would love to connect!</textarea>
 <script>
 /* ── ELEMENTS ── */
 const progressBar = document.getElementById('progress');
+const pageScrollRibbon = document.getElementById('pageScrollRibbon');
+const ribbonGhost = document.getElementById('ribbonGhost');
+const ribbonGlow = document.getElementById('ribbonGlow');
+const ribbonDraw = document.getElementById('ribbonDraw');
+const ribbonHead = document.getElementById('ribbonHead');
+let ribbonLength = 0;
+let lastRibbonBuildKey = '';
 const navEl = document.getElementById('nav');
 const themeSections = document.querySelectorAll('[data-nav-theme]');
 const navLinks = document.querySelectorAll('.nav-links a');
@@ -3153,6 +3044,7 @@ const SCENE_ENTRY_DELAY = 120;
 
 function setProgressActive(active) {
   if (progressBar) progressBar.classList.toggle('narr-active', active);
+  if (pageScrollRibbon) pageScrollRibbon.classList.toggle('narr-active', active);
 }
 
 function setNarrActive(active) {
@@ -3204,18 +3096,105 @@ function sizeNarrativeScenes() {
   });
 }
 
+/* ── FULL-PAGE SVG ROUTE — subtle scroll-drawn ribbon ──
+   The path is generated against the full document height, so it belongs to the
+   page itself. It softly crosses the layout from left to right and top to bottom,
+   then stroke-dashoffset reveals it according to global scroll progress. */
+function buildPageScrollRibbon() {
+  if (!pageScrollRibbon || !ribbonGhost || !ribbonGlow || !ribbonDraw) return;
+
+  const doc = document.documentElement;
+  const w = Math.max(window.innerWidth, doc.clientWidth || 0);
+  const h = Math.max(doc.scrollHeight, document.body.scrollHeight, window.innerHeight);
+  const buildKey = `${Math.round(w)}x${Math.round(h)}`;
+  if (buildKey === lastRibbonBuildKey && ribbonLength > 0) return;
+  lastRibbonBuildKey = buildKey;
+
+  pageScrollRibbon.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  pageScrollRibbon.style.height = `${h}px`;
+
+  const isMobile = w < 800;
+  const left = isMobile ? w * 0.08 : w * 0.075;
+  const right = isMobile ? w * 0.92 : w * 0.925;
+  const nearLeft = isMobile ? w * 0.18 : w * 0.16;
+  const nearRight = isMobile ? w * 0.82 : w * 0.84;
+  const center = w * 0.5;
+
+  const step = Math.max(isMobile ? 430 : 560, window.innerHeight * 0.62);
+  const points = [];
+  let y = 90;
+  let flip = false;
+
+  points.push({ x: nearLeft, y });
+  while (y < h - 180) {
+    y += step;
+    const band = points.length % 4;
+    let x;
+    if (band === 0) x = nearLeft;
+    else if (band === 1) x = right;
+    else if (band === 2) x = center + (flip ? -w * 0.12 : w * 0.12);
+    else x = left;
+    points.push({ x, y: Math.min(y, h - 90) });
+    flip = !flip;
+  }
+
+  if (points[points.length - 1].y < h - 70) {
+    points.push({ x: nearRight, y: h - 70 });
+  }
+
+  let d = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
+  for (let i = 1; i < points.length; i++) {
+    const p0 = points[i - 1];
+    const p1 = points[i];
+    const dy = p1.y - p0.y;
+    const sidePull = (i % 2 === 0 ? -1 : 1) * w * (isMobile ? 0.11 : 0.16);
+    const c1x = Math.max(24, Math.min(w - 24, p0.x + sidePull));
+    const c2x = Math.max(24, Math.min(w - 24, p1.x - sidePull));
+    const c1y = p0.y + dy * 0.34;
+    const c2y = p0.y + dy * 0.72;
+    d += ` C ${c1x.toFixed(1)} ${c1y.toFixed(1)}, ${c2x.toFixed(1)} ${c2y.toFixed(1)}, ${p1.x.toFixed(1)} ${p1.y.toFixed(1)}`;
+  }
+
+  [ribbonGhost, ribbonGlow, ribbonDraw].forEach(path => path.setAttribute('d', d));
+
+  ribbonLength = ribbonDraw.getTotalLength();
+  [ribbonGlow, ribbonDraw].forEach(path => {
+    path.style.strokeDasharray = ribbonLength;
+    path.style.strokeDashoffset = ribbonLength;
+  });
+
+  updatePageScrollRibbon(window.scrollY, doc.scrollHeight - window.innerHeight);
+}
+
+function updatePageScrollRibbon(y, sh) {
+  if (!ribbonDraw || !ribbonGlow || !ribbonLength) return;
+  const p = sh > 0 ? clamp01(y / sh) : 0;
+  const offset = ribbonLength * (1 - p);
+  ribbonDraw.style.strokeDashoffset = offset;
+  ribbonGlow.style.strokeDashoffset = offset;
+
+  if (ribbonHead) {
+    const headAt = Math.max(0, Math.min(ribbonLength, ribbonLength * p));
+    const pt = ribbonDraw.getPointAtLength(headAt);
+    ribbonHead.setAttribute('cx', pt.x.toFixed(1));
+    ribbonHead.setAttribute('cy', pt.y.toFixed(1));
+    ribbonHead.style.opacity = p > 0.015 && p < 0.985 ? '' : '0';
+  }
+}
+
 /* ── CONTINUOUS rAF LOOP — only nav + progress bar now.
    Narrative reveals are handled by IntersectionObserver above. */
 function tick() {
   const y = window.scrollY;
   const sh = document.documentElement.scrollHeight - window.innerHeight;
-  progressBar.style.width = (sh > 0 ? (y / sh) * 100 : 0) + '%';
+  if (progressBar) progressBar.style.width = (sh > 0 ? (y / sh) * 100 : 0) + '%';
+  updatePageScrollRibbon(y, sh);
   navEl.classList.toggle('scrolled', y > 30);
   updateNavTheme();
   updateActiveNav();
   requestAnimationFrame(tick);
 }
-window.addEventListener('resize', () => { sizeNarrativeScenes(); }, { passive: true });
+window.addEventListener('resize', () => { sizeNarrativeScenes(); buildPageScrollRibbon(); }, { passive: true });
 
 /* ── REVEAL ON SCROLL (timeline + interests + case study elements) ── */
 const revealObserver = new IntersectionObserver((entries) => {
@@ -3226,22 +3205,20 @@ const revealObserver = new IntersectionObserver((entries) => {
     }
   });
 }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
-document.querySelectorAll('.tl-item, .int-tile, .reveal, .case-hook, .case-quote, .depth-up').forEach(el => revealObserver.observe(el));
+document.querySelectorAll('.tl-item, .int-tile, .reveal, .case-hook, .depth-up').forEach(el => revealObserver.observe(el));
 
 /* ── ANIMATED COUNTERS (hero stats) ── */
 const counterObserver = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if (e.isIntersecting) {
       e.target.querySelectorAll('[data-counter]').forEach(el => {
-        const target = parseFloat(el.dataset.counter);
-        const isDecimal = el.dataset.counter.includes('.');
+        const target = parseInt(el.dataset.counter, 10);
         const duration = 1400;
         const start = performance.now();
         const animate = (now) => {
           const t = Math.min((now - start) / duration, 1);
           const eased = 1 - Math.pow(1 - t, 3);
-          const val = eased * target;
-          el.textContent = isDecimal ? val.toFixed(1) : Math.round(val);
+          el.textContent = Math.round(eased * target);
           if (t < 1) requestAnimationFrame(animate);
         };
         requestAnimationFrame(animate);
@@ -3253,7 +3230,7 @@ const counterObserver = new IntersectionObserver((entries) => {
 document.querySelectorAll('#hero-stats').forEach(el => counterObserver.observe(el));
 
 /* ── CASE STUDY VIEWER ── */
-const CS_HTML = [null, null, null, null, null];
+const CS_HTML = [null, null, null, null];
 function openViewer(i) {
   if (!CS_HTML[i]) return;
   const viewer = document.getElementById('cs-viewer');
@@ -3389,37 +3366,6 @@ function handleScroll() {
 
 window.addEventListener('scroll', handleScroll, { passive: true });
 
-/* ── DIRECT LINK BYPASS — skip ritual immediately when arriving via a hash or
-   text-fragment link so scroll is unlocked before the CDN module loads.
-   The module script picks up window._ritualBypassed to sync its own state.
-*/
-(function() {
-  function _bypassRitual() {
-    const ritual = document.getElementById('coffee-ritual');
-    const indicator = document.getElementById('virtualCoffeeIndicator');
-    if (ritual) ritual.classList.add('started', 'video-done', 'cup-served', 'cup-fade', 'ritual-complete');
-    document.body.classList.remove('ritual-playing');
-    document.body.classList.add('ritual-served', 'ritual-complete', 'portfolio-visible');
-    document.body.style.overflow = '';
-    if (indicator) indicator.classList.add('visible');
-    window._ritualBypassed = true;
-  }
-
-  if (window.location.hash && window.location.hash !== '#') {
-    _bypassRitual();
-  } else {
-    // Text-fragment links (#:~:text=…) are stripped from location.hash by Chrome.
-    // _ritualScrollGuard blocks all user wheel/touch scrolls before ritual completes,
-    // so the first scroll event while still pending must be browser fragment navigation.
-    window.addEventListener('scroll', function _fragNav() {
-      window.removeEventListener('scroll', _fragNav);
-      if (!document.body.classList.contains('ritual-served') && window.scrollY > 0) {
-        _bypassRitual();
-      }
-    }, { passive: true });
-  }
-})();
-
 /* ── SCROLL LOCK — prevent scrolling past ritual before brewing ──
    Wheel and touch are both blocked until body.ritual-served is set
    by the ritual JS (happens after the video ends and cup is served).
@@ -3433,6 +3379,8 @@ window.addEventListener('wheel',     _ritualScrollGuard, { passive: false });
 window.addEventListener('touchmove', _ritualScrollGuard, { passive: false });
 
 sizeNarrativeScenes();
+buildPageScrollRibbon();
+window.addEventListener('load', buildPageScrollRibbon, { once: true });
 updateNavTheme();
 updateActiveNav();
 tick();
@@ -4939,280 +4887,6 @@ CS_HTML[3] = `<!DOCTYPE html>
 </body>
 </html>
 `;
-
-CS_HTML[4] = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Case Study: Uber Eats Grocery Adoption</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #f7f4ef;
-    --ink: #0f0f0f;
-    --accent: #c84b31;
-    --muted: #7a7570;
-    --rule: #d9d4cc;
-    --highlight: #fff8e7;
-    --card: #faf9f7;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--bg); color: var(--ink); font-family: 'DM Sans', sans-serif; font-size: 16px; line-height: 1.8; }
-
-  .cover { background: var(--ink); color: var(--bg); }
-  .cover-inner { max-width: 860px; margin: 0 auto; display: grid; grid-template-columns: 1fr 260px; min-height: 300px; }
-  .cover-left { padding: 64px 48px 64px 40px; border-right: 1px solid rgba(255,255,255,0.07); }
-  .cover-label { font-size: 10px; letter-spacing: 3.5px; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
-  .cover-label::before { content: ''; display: inline-block; width: 24px; height: 1px; background: var(--accent); }
-  .cover h1 { font-family: 'Playfair Display', serif; font-size: clamp(22px, 3vw, 38px); font-weight: 700; line-height: 1.15; max-width: 500px; margin-bottom: 18px; }
-  .cover-sub { font-size: 13px; color: rgba(247,244,239,0.62); max-width: 460px; line-height: 1.65; }
-  .cover-meta-row { display: flex; gap: 28px; flex-wrap: wrap; margin-top: 40px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); }
-  .meta-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: rgba(247,244,239,0.35); margin-bottom: 5px; }
-  .meta-value { font-size: 13px; font-weight: 500; color: rgba(247,244,239,0.82); }
-  .cover-right { padding: 64px 36px 64px 32px; display: flex; flex-direction: column; justify-content: center; gap: 28px; }
-  .cover-stat { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 14px; }
-  .cover-stat-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: rgba(247,244,239,0.38); margin-bottom: 5px; }
-  .cover-stat-value { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; line-height: 1; color: var(--bg); }
-  .cover-stat-sub { font-size: 11px; color: rgba(247,244,239,0.45); margin-top: 4px; line-height: 1.4; }
-
-  .body-wrap { max-width: 860px; margin: 0 auto; padding: 72px 40px 80px; }
-  .section { margin-bottom: 64px; }
-  .section-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 22px; padding-bottom: 14px; border-bottom: 2px solid var(--ink); }
-  .section-num { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-weight: 700; min-width: 24px; flex-shrink: 0; }
-  .section h2 { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; line-height: 1.2; }
-  .section p { color: #2c2c2c; margin-bottom: 18px; font-size: 15px; line-height: 1.85; }
-  .section p strong { font-weight: 700; color: var(--ink); }
-  .section p:last-child { margin-bottom: 0; }
-
-  hr.rule { border: none; border-top: 1px solid var(--rule); margin-bottom: 64px; }
-
-  .pull { font-family: 'Playfair Display', serif; font-size: 19px; line-height: 1.55; color: var(--ink); border-left: 3px solid var(--accent); padding: 14px 26px; margin: 30px 0; font-style: italic; }
-
-  .callout { background: var(--highlight); border-left: 3px solid var(--accent); padding: 20px 24px; margin: 26px 0; border-radius: 0 4px 4px 0; }
-  .callout p { margin: 0; font-size: 15px; color: var(--ink); }
-  .callout strong { font-weight: 600; }
-
-  .note { border: 1px solid var(--rule); background: var(--card); padding: 22px 26px; margin: 26px 0; border-radius: 4px; }
-  .note-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 10px; }
-  .note p { margin: 0; font-size: 14px; color: #2c2c2c; line-height: 1.75; }
-
-  ul.clean { list-style: none; padding: 0; margin: 18px 0; }
-  ul.clean li { padding: 10px 0 10px 22px; position: relative; color: #2c2c2c; border-bottom: 1px solid var(--rule); font-size: 15px; line-height: 1.6; }
-  ul.clean li:first-child { border-top: 1px solid var(--rule); }
-  ul.clean li::before { content: '->'; position: absolute; left: 0; color: var(--accent); font-weight: 700; font-size: 12px; top: 13px; }
-
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
-  .concept-card { background: var(--ink); color: var(--bg); padding: 28px; border-radius: 4px; }
-  .concept-card--light { background: var(--card); color: var(--ink); border: 1px solid var(--rule); }
-  .concept-name { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 10px; }
-  .concept-card--light .concept-name { color: var(--accent); }
-  .concept-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; margin-bottom: 10px; color: var(--bg); }
-  .concept-card--light .concept-title { color: var(--ink); }
-  .concept-desc { font-size: 13px; line-height: 1.7; color: rgba(247,244,239,0.72); }
-  .concept-card--light .concept-desc { color: var(--muted); }
-  .concept-why { font-size: 12px; font-weight: 600; color: var(--accent); margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1); }
-  .concept-card--light .concept-why { border-top-color: var(--rule); }
-
-  .funnel { display: flex; flex-direction: column; gap: 3px; margin: 24px 0; }
-  .funnel-step { padding: 14px 20px; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: space-between; }
-  .funnel-step--dim { background: var(--card); border: 1px solid var(--rule); color: var(--muted); }
-  .funnel-step--active { background: var(--accent); color: white; }
-  .funnel-step--insight { background: var(--ink); color: var(--bg); }
-  .funnel-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; }
-
-  .metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 24px 0; }
-  .metric-card { background: var(--card); border: 1px solid var(--rule); border-top: 3px solid var(--accent); padding: 20px; }
-  .metric-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 8px; }
-  .metric-value { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; margin-bottom: 6px; }
-  .metric-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
-
-  .closer { background: var(--highlight); border: 1px solid rgba(200,75,49,0.18); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; padding: 42px 46px; margin-top: 8px; }
-  .closer h3 { font-family: 'Playfair Display', serif; font-size: 24px; margin-bottom: 10px; color: var(--accent); line-height: 1.2; }
-  .closer-sub { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
-  .closer ul { list-style: none; }
-  .closer ul li { padding: 13px 0 13px 26px; position: relative; font-size: 15px; border-bottom: 1px solid var(--rule); color: var(--ink); line-height: 1.7; }
-  .closer ul li:last-child { border-bottom: none; }
-  .closer ul li::before { content: '*'; position: absolute; left: 0; color: var(--accent); font-size: 14px; top: 14px; }
-
-  .footer { background: var(--ink); color: rgba(247,244,239,0.3); text-align: center; padding: 24px; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; }
-
-  @media (max-width: 680px) {
-    .cover-inner { grid-template-columns: 1fr; }
-    .cover-left { padding: 48px 28px 32px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.07); }
-    .cover-right { padding: 28px 28px 48px; flex-direction: row; flex-wrap: wrap; gap: 20px; }
-    .body-wrap { padding: 48px 22px; }
-    .two-col { grid-template-columns: 1fr; }
-    .metrics-row { grid-template-columns: 1fr; }
-  }
-</style>
-</head>
-<body>
-
-<div class="cover">
-  <div class="cover-inner">
-    <div class="cover-left">
-      <div class="cover-label">Academic Project · Yeshiva University · 2025</div>
-      <h1>Grocery adoption wasn't a marketing problem. It was a habit formation problem.</h1>
-      <p class="cover-sub">Primary research into why Uber Eats grocery delivery wasn't converting, and two product concepts built directly from the behavioral gaps the data uncovered.</p>
-      <div class="cover-meta-row">
-        <div><div class="meta-label">Company</div><div class="meta-value">Uber Eats (Case Study)</div></div>
-        <div><div class="meta-label">Method</div><div class="meta-value">Surveys · User Interviews</div></div>
-        <div><div class="meta-label">Output</div><div class="meta-value">NextBite · TwinCart</div></div>
-      </div>
-    </div>
-    <div class="cover-right">
-      <div class="cover-stat">
-        <div class="cover-stat-label">The Real Barrier</div>
-        <div class="cover-stat-value">Habit</div>
-        <div class="cover-stat-sub">Not awareness. Identified from primary research.</div>
-      </div>
-      <div class="cover-stat">
-        <div class="cover-stat-label">Peak Intent Window</div>
-        <div class="cover-stat-value">60 sec</div>
-        <div class="cover-stat-sub">Post food order. The moment grocery adoption is most likely.</div>
-      </div>
-      <div class="cover-stat">
-        <div class="cover-stat-label">Concepts Built</div>
-        <div class="cover-stat-value">2</div>
-        <div class="cover-stat-sub">Both derived from friction points, not assumptions.</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="body-wrap">
-
-  <div class="section">
-    <div class="section-header">
-      <span class="section-num">01</span>
-      <h2>The Research Question</h2>
-    </div>
-    <p>Uber Eats had been promoting grocery delivery for years. The product existed. The marketing existed. But grocery adoption wasn't growing in proportion to the user base. The question wasn't "how do we tell more people?" The question was: <strong>why aren't people who already know about it actually using it?</strong></p>
-    <p>We ran primary research across busy professionals and frequent Uber Eats users. The goal was to map the actual decision journey, not the assumed one.</p>
-
-    <div class="pull">The challenge is not awareness alone. It is habit and relevance at the moment of use.</div>
-  </div>
-
-  <hr class="rule">
-
-  <div class="section">
-    <div class="section-header">
-      <span class="section-num">02</span>
-      <h2>What the Research Found</h2>
-    </div>
-    <p>The survey data was clear on a few things most campaigns would miss entirely:</p>
-
-    <ul class="clean">
-      <li>Most users were already aware Uber Eats delivered groceries. Awareness was not the gap.</li>
-      <li>Grocery ordering was rarely the reason someone opened the app. The app lived in the "hungry now" mental context, not the "planning ahead" one.</li>
-      <li>Users reported friction and decision fatigue when food and grocery needs were handled separately: different apps, different carts, different checkout flows.</li>
-      <li>When asked if they would add groceries to a food order if suggested, most said they would. The intent existed. The trigger didn't.</li>
-    </ul>
-
-    <div class="callout">
-      <p><strong>The behavioral insight:</strong> The highest-intent moment for grocery adoption is the 60 seconds immediately after a food order is placed. The user is already in the app. The transaction mindset is active. Suggesting groceries at that exact moment reduces switching cost to near zero.</p>
-    </div>
-
-    <p>This reframed the entire problem. It wasn't a top-of-funnel awareness problem. It was a moment-of-use and friction problem. The product needed to meet users at their existing behavior, not ask them to build a new one.</p>
-  </div>
-
-  <hr class="rule">
-
-  <div class="section">
-    <div class="section-header">
-      <span class="section-num">03</span>
-      <h2>From Research to Product Concepts</h2>
-    </div>
-    <p>The research validated two product concepts, both designed to reduce friction at the behavioral bottleneck rather than drive awareness at the top of the funnel.</p>
-
-    <div class="two-col">
-      <div class="concept-card">
-        <div class="concept-name">Concept 01</div>
-        <div class="concept-title">NextBite</div>
-        <div class="concept-desc">After a food order is confirmed, Uber Eats surfaces a curated set of grocery suggestions for the next meal: breakfast essentials, snacks, beverages, or healthy add-ons. One tap adds them to a new cart. No app switching. No separate session.</div>
-        <div class="concept-why">Why it works: Catches the user at peak intent, immediately post-order, when the transaction mindset is still active.</div>
-      </div>
-      <div class="concept-card concept-card--light">
-        <div class="concept-name">Concept 02</div>
-        <div class="concept-title">TwinCart</div>
-        <div class="concept-desc">Food and groceries in a single checkout. One cart, one payment, one delivery window. Eliminates the need to open a separate app or start a new session entirely.</div>
-        <div class="concept-why">Why it works: Removes the switching cost entirely. The user never has to leave the existing ordering flow.</div>
-      </div>
-    </div>
-
-    <p>Both concepts were built from the specific friction points the research surfaced. Neither relied on assumptions about what users wanted. The data told us where the drop-off happened; the concepts addressed that exact point.</p>
-  </div>
-
-  <hr class="rule">
-
-  <div class="section">
-    <div class="section-header">
-      <span class="section-num">04</span>
-      <h2>GTM Strategy and Business Case</h2>
-    </div>
-    <p>Both concepts were evaluated against three financial levers that matter for a marketplace at Uber Eats' scale:</p>
-
-    <div class="metrics-row">
-      <div class="metric-card">
-        <div class="metric-label">CLV</div>
-        <div class="metric-value">Customer Lifetime Value</div>
-        <div class="metric-desc">Shifting users from occasional food orders to combined food and grocery sessions increases session frequency and spend per user over time.</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">CAC</div>
-        <div class="metric-value">Acquisition Cost</div>
-        <div class="metric-desc">Grocery adoption driven through existing food sessions costs near zero to acquire. No new channel spend required.</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">AOV</div>
-        <div class="metric-value">Average Order Value</div>
-        <div class="metric-desc">Adding grocery items to an existing food order directly increases basket size per transaction without requiring a separate session.</div>
-      </div>
-    </div>
-
-    <p>The GTM approach was also deliberately sequenced: <strong>NextBite first</strong>, because it integrates with the existing post-order experience and requires no UI change to the core ordering flow, then <strong>TwinCart</strong> as the deeper integration once the behavioral pattern is established. This reduces implementation risk while building the habit loop progressively.</p>
-
-    <div class="note">
-      <div class="note-label">On the segmentation strategy</div>
-      <p>The research identified three segments with distinct adoption profiles: busy professionals (highest intent, lowest planning bandwidth, best fit for NextBite), frequent app users (already habituated to the platform, easiest TwinCart conversion), and health-conscious users (motivated by convenience around dietary consistency, strong AOV upside). GTM messaging was mapped separately for each.</p>
-    </div>
-  </div>
-
-  <hr class="rule">
-
-  <div class="section">
-    <div class="section-header">
-      <span class="section-num">05</span>
-      <h2>How I Would Measure It</h2>
-    </div>
-    <p>If this were a live product, the metrics that would actually tell you if it's working are behavioral, not just financial:</p>
-
-    <ul class="clean">
-      <li><strong>Post-order grocery add rate:</strong> percentage of food orders followed by a grocery add within 10 minutes. This is the direct signal for NextBite effectiveness.</li>
-      <li><strong>Grocery session recurrence:</strong> do users who add groceries once do it again within 14 days? Recurrence is the habit signal, not one-time adoption.</li>
-      <li><strong>TwinCart checkout completion rate:</strong> drop-off in a combined cart tells you where the friction still exists in the unified flow.</li>
-      <li><strong>AOV delta:</strong> average order value for users who adopt vs. those who don't, controlled for order frequency.</li>
-      <li><strong>Time-to-order on grocery items:</strong> a proxy for decision fatigue. If NextBite suggestions are well-targeted, this should drop significantly versus a user browsing the grocery catalog cold.</li>
-    </ul>
-  </div>
-
-  <div class="closer">
-    <h3>What this project actually taught me</h3>
-    <p class="closer-sub">Not the summary version. The real version.</p>
-    <ul>
-      <li>The most important research finding is usually the one that contradicts the brief. We went in looking at awareness. The data kept pointing somewhere else.</li>
-      <li>Product thinking and marketing thinking converge at the moment of use. Where does the user actually make the decision? That's where both disciplines have to show up together.</li>
-      <li>A concept that reduces friction beats a concept that adds value, almost every time. NextBite doesn't add a new behavior. It catches an existing intent at a better moment.</li>
-    </ul>
-  </div>
-
-</div>
-
-<div class="footer">Portfolio Case Study · Academic Project · Uber Eats Grocery Adoption · Yeshiva University 2025</div>
-</body>
-</html>
-`;
 </script>
 
 <!-- ═══════════════ AMBIENT MUSIC PLAYER ═══════════════ -->
@@ -5224,7 +4898,6 @@ CS_HTML[4] = `<!DOCTYPE html>
 
 <div class="music-player mp-hidden" id="musicPlayer" aria-label="Ambient music player">
   <div class="mp-steam" aria-hidden="true">
-
     <span></span><span></span><span></span>
   </div>
   <button class="mp-btn" id="mpPlayBtn" aria-label="Play ambient music">
@@ -5386,8 +5059,9 @@ CS_HTML[4] = `<!DOCTYPE html>
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (d && d.count > 0 && vcNum) vcNum.textContent = d.count;
+      // bad/zero count → leave '—' hidden (counter stays invisible until .show)
     })
-    .catch(function () {});
+    .catch(function () { /* network/script error — show nothing */ });
 
   // Reveal player + counter + show toast when #journey scrolls into view
   const journeyEl = document.getElementById('journey');
